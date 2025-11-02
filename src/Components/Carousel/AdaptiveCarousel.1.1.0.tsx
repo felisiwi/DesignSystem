@@ -80,6 +80,7 @@ export default function CarouselZombie({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemWidth, setItemWidth] = useState(0)
   const [containerWidth, setContainerWidth] = useState(0)
+  const [directionLock, setDirectionLock] = useState<'horizontal' | 'vertical' | null>(null)
   
   // Refs
   const containerRef = useRef<HTMLDivElement>(null)
@@ -210,9 +211,29 @@ export default function CarouselZombie({
     isAnimating.current = false  // Clear animation flag to allow immediate drag
     dragStartTime.current = Date.now()
     velocityHistory.current = []
+    setDirectionLock(null)  // Reset direction lock at start of each drag
   }
 
   const handleDrag = (event: any, info: PanInfo) => {
+    // Determine direction lock based on angle (Pure Angle-Based approach)
+    if (directionLock === null) {
+      const angle = Math.abs(Math.atan2(info.offset.y, info.offset.x) * 180 / Math.PI)
+      
+      if (angle < 30) {
+        // Mostly horizontal (< 30°) → lock to carousel
+        setDirectionLock('horizontal')
+      } else if (angle > 60) {
+        // Mostly vertical (> 60°) → allow page scroll
+        setDirectionLock('vertical')
+      }
+      // 30-60° = diagonal, no lock yet (wait for clearer direction)
+    }
+    
+    // Block page scroll only if locked horizontal
+    if (directionLock === 'horizontal' && event.cancelable) {
+      event.preventDefault()
+    }
+    
     velocityHistory.current.push(Math.abs(info.velocity.x))
   }
 
@@ -452,7 +473,7 @@ export default function CarouselZombie({
           flex: 1,
           overflow: 'hidden',
           position: 'relative',
-          touchAction: 'pan-x pinch-zoom',
+          touchAction: 'auto',  // Changed from 'pan-x pinch-zoom' to allow directional lock
           overscrollBehavior: 'none',
           overscrollBehaviorX: 'none',
           height: '100%',
