@@ -17,7 +17,7 @@ const GLIDE_ACCELERATION_HIGH = 50          // Clearer burst needed for T3
 const MIN_GLIDE_DURATION = 80  // ms - Glides should be longer gestures
 const MAX_GLIDE_VELOCITY = 600 // px/s - Very fast gestures are likely flicks
 
-interface CarouselZombieProps {
+interface AdaptiveCarouselProps {
   children: React.ReactNode
   columns?: number
   gap?: number
@@ -49,7 +49,7 @@ interface CarouselZombieProps {
   dotInactiveColor?: string
 }
 
-export default function CarouselZombie({
+export default function AdaptiveCarousel({
   children,
   columns = 1,
   gap = 8,
@@ -75,7 +75,7 @@ export default function CarouselZombie({
   dotGap = 8,
   dotColor = '#000000',
   dotInactiveColor = '#F2F2F2'
-}: CarouselZombieProps) {
+}: AdaptiveCarouselProps) {
   // Basic state
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemWidth, setItemWidth] = useState(0)
@@ -656,7 +656,7 @@ export default function CarouselZombie({
   )
 }
 
-addPropertyControls(CarouselZombie, {
+addPropertyControls(AdaptiveCarousel, {
   children: {
     type: ControlType.Array,
     title: "Items",

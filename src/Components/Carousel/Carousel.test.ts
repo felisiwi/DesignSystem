@@ -1,6 +1,21 @@
+import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
-import { describe, test, expect } from 'vitest';
-import AdaptiveCarousel from './AdaptiveCarousel.v1.1.0';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
+
+// Mock framer module since it's not available in test environment
+vi.mock('framer', () => ({
+  addPropertyControls: vi.fn(),
+  ControlType: {
+    Array: 'Array',
+    Number: 'Number',
+    Boolean: 'Boolean',
+    Enum: 'Enum',
+    Color: 'Color',
+    ComponentInstance: 'ComponentInstance',
+  },
+}));
+
+import AdaptiveCarousel from './AdaptiveCarousel.1.1.0';
 
 describe('AdaptiveCarousel', () => {
   test('renders without crashing', () => {
