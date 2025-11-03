@@ -1,0 +1,231 @@
+---
+🆕 Suggested Integration – Carousel_07_021125.md
+---
+
+Below are the newly added insights from your most recent Claude session.
+
+Manually integrate them into the relevant sections of Carousel_MASTER.md.
+
+--------------------------------------------------------------
+
+# Carousel Session 07 – November 3, 2025
+
+## Session Overview
+
+This session focused on consolidating all carousel development knowledge into a unified master document and clarifying architectural decisions around monolithic vs. modular design patterns. A critical correction was made regarding the v1.1.0 architecture, which is monolithic (not modular as initially stated).
+
+---
+
+## Key Activities
+
+### 1. Master Overview Document Creation
+
+**Objective:** Generate unified `Carousel_MASTER.md` from all session notes
+
+**Process:**
+- Searched project knowledge for all carousel documentation
+- Consolidated development history from v0.1.x through v1.1.0
+- Organized chronologically with thematic sections
+
+**Sections Created:**
+- **Version Evolution:** Complete changelog with rationale
+- **Core Systems:** Gesture detection, animation, keyboard navigation
+- **Problem-Solution Pairs:** Key fixes and their context
+- **API Reference:** Comprehensive prop documentation
+- **Architectural Evolution:** Monolithic → Modular considerations
+
+**Outcome:** ✅ Complete master document generated
+
+---
+
+### 2. Directional Scroll Lock Investigation
+
+**Question:** What was the final decision on scroll locking approach?
+
+**Options Discussed:**
+1. Current: `touchAction: 'pan-y'` (blocks all horizontal scroll)
+2. Industry Standard: Angle-based directional lock
+
+**Search Attempt:**
+- Looked for claude_05 and claude_06 session notes
+- Could not locate specific decision documentation in project knowledge
+
+**Resolution:** ❌ Final decision rationale unclear from available docs
+
+---
+
+### 3. Architecture Clarification: Monolithic vs. Modular
+
+**Critical Correction Made:**
+
+**Initial Error:**
+- Claude incorrectly identified `AdaptiveCarousel.1.1.0.tsx` as modular
+
+**User Correction:**
+- v1.1.0 is actually **monolithic** (850+ lines, single file)
+- `AdaptiveCarousel-Modular.v0.4.0.tsx` is the true modular version
+
+**Comparison:**
+
+| Aspect | Monolithic (v1.1.0) | Modular (v0.4.0) |
+|--------|---------------------|------------------|
+| **Structure** | Single 850+ line file | Separated into hooks + utils |
+| **Lines of Code** | 850+ | ~400 main + ~300 distributed |
+| **Readability** | Requires scrolling | Jump to specific files |
+| **Testing** | Integration-focused | Unit + integration |
+| **Maintenance** | Context-in-place | Distributed context |
+
+---
+
+### 4. Testing Discussion: Modularity Not Required
+
+**Misconception Addressed:**
+- User questioned assertion that modular = better for testing
+
+**Reality:**
+- **Both architectures are testable:**
+  - Monolithic: Integration/E2E testing focus
+  - Modular: Easier unit testing of individual functions
+
+**User Decision:**
+- **Keep monolithic v1.1.0** as primary version
+- Modular useful for learning/reference but not production necessity
+
+---
+
+## Technical Decisions
+
+### Decision: Maintain Monolithic Architecture
+
+**Rationale:**
+1. **Single Source of Truth:** All logic visible in one place
+2. **Context Preservation:** No jumping between files to understand flow
+3. **Framer Compatibility:** Simpler to copy/paste into projects
+4. **Team Preference:** Works better for solo/small team workflow
+
+**Trade-offs Accepted:**
+- Longer file requires more scrolling
+- Harder to unit test individual functions in isolation
+- Less code reuse across projects
+
+---
+
+## Documentation Created
+
+### Files Generated This Session:
+
+1. **Carousel_MASTER.md**
+   - Location: `/notes/claude-sessions/Carousel/`
+   - Purpose: Unified overview of all carousel development
+   - Sections: Version history, core systems, API, architecture
+
+2. **PROJECT_NOTES.md** (Created, not pre-existing)
+   - Location: `/notes/`
+   - Purpose: Top-level project navigation
+   - Content: Links to component master docs
+
+---
+
+## Open Questions
+
+### 🔍 Still Investigating
+
+1. **Scroll Lock Decision:**
+   - Need to locate claude_05 or claude_06 notes
+   - Understand why `touchAction: 'pan-y'` was chosen over angle-based
+
+2. **Column-Specific Detection:**
+   - Why different thresholds for single vs. multi-column?
+   - How should responsive breakpoints affect detection?
+   - Example: 2 columns on phone → 4 columns on tablet landscape
+
+---
+
+## Action Items
+
+### Immediate
+- [ ] Locate missing session notes (claude_05, claude_06) for scroll lock context
+- [ ] Document column-specific detection rationale
+- [ ] Test responsive breakpoint behavior (2 → 4 columns)
+
+### Future Considerations
+- [ ] Consider creating minimal modular utilities for reuse
+- [ ] Evaluate if direction lock needs angle-based upgrade
+- [ ] Create testing guide for monolithic architecture
+
+---
+
+## Key Learnings
+
+### Architecture Philosophy
+
+**When to Choose Monolithic:**
+- Solo developer or small team
+- Component used in specific context (Framer)
+- Prefer context-in-place over separation
+- Integration testing is primary concern
+
+**When to Choose Modular:**
+- Large team with shared utilities
+- Heavy unit testing requirements
+- Code reuse across multiple projects
+- Clear separation of concerns needed
+
+### Testing Reality
+
+**Myth:** "Modular architecture is required for good testing"
+
+**Truth:** Both architectures support testing, just different approaches:
+- **Monolithic:** Test component behavior as a whole (black box)
+- **Modular:** Test individual functions in isolation (white box)
+
+Choose based on what you're testing and how your team works, not on architectural dogma.
+
+---
+
+## Files Modified/Created
+
+### Documentation
+- ✅ `Carousel_MASTER.md` - Complete master overview
+- ✅ `PROJECT_NOTES.md` - New project navigation file
+
+### Code
+- No code changes this session (documentation focus)
+
+---
+
+## Session Metrics
+
+- **Session Duration:** ~45 minutes (est.)
+- **Token Limit:** Reached before end-of-chat prompt execution
+- **Primary Focus:** Documentation consolidation
+- **Secondary Focus:** Architecture clarification
+- **Key Correction:** v1.1.0 is monolithic, not modular
+
+---
+
+## Next Session Recommendations
+
+1. **Resolve Open Questions:**
+   - Find scroll lock decision docs
+   - Document column detection rationale
+
+2. **Testing Strategy:**
+   - Create testing guide for monolithic v1.1.0
+   - Include E2E test examples
+
+3. **Responsive Behavior:**
+   - Test/document breakpoint transitions (2 → 4 columns)
+   - Ensure detection thresholds scale properly
+
+4. **Knowledge Base:**
+   - Ensure all session notes indexed in project knowledge
+   - Consider naming convention: `Carousel_Session_NN.md`
+
+---
+
+**Session Status:** Documentation Complete | Token Limit Reached  
+**Next Session:** Investigation of column-specific detection logic
+--------------------------------------------------------------
+✅ End of suggestions.
+
