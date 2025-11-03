@@ -1,7 +1,7 @@
 #!/bin/bash
-# post_chat.sh — upgraded automation for Carousel Master session integration
+# post_chat.sh — upgraded automation for Carousel Master session integration (updated paths)
 
-MASTER_FILE="Carousel_MASTER.md"
+MASTER_FILE="notes/claude-sessions/Carousel/Carousel_MASTER.md"
 SESSION_DIR="notes/claude-sessions/Carousel"
 
 # Find the most recently modified session markdown file (excluding the master)
@@ -20,7 +20,7 @@ SESSION_TITLE=$(head -n 1 "$LATEST_SESSION" | sed 's/# //')
 KEY_POINTS=$(grep -E '^[-*]' "$LATEST_SESSION" | head -n 10)
 
 # Create temporary snippet for integration
-TEMP_SNIPPET="notes/claude-sessions/Carousel/Session_Integration_${SESSION_DATE}.md"
+TEMP_SNIPPET="$SESSION_DIR/Session_Integration_${SESSION_DATE}.md"
 
 cat <<EOF > "$TEMP_SNIPPET"
 ## ${SESSION_TITLE:-Session Update} — ${SESSION_DATE//_//}
