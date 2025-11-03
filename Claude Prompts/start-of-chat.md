@@ -11,4 +11,10 @@ The canonical master document is `Carousel_MASTER.md` in the same folder.
 3. When discussing updates, clearly describe *what changed and why* so it can later be added to the repo.  
 4. Treat this chat as part of the ongoing documentation process — no file access is available here.  
 
+🧭 **Latest Component Context**
+Always treat `/src/Components/Carousel/AdaptiveCarousel.[latest].tsx` as the current version of the carousel.  
+Ignore references to older modular systems or separate hook architectures unless explicitly requested.  
+Only read `/src/Components/Carousel/Versions/` for historical reference when asked to review past iterations.
+
+
 Do **not** access Google Drive or any external storage paths.

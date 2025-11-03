@@ -45,17 +45,12 @@ A production-ready carousel component that understands user intent. Swipe slowly
 
 ### Current Version Status
 
-**v1.1.0 (Monolithic)**
+**v1.1.1 (Monolithic)**
 - 850+ lines, single file
 - Production-ready
 - Full feature set
 - Easy to copy/paste into Framer
 
-**v0.4.0 (Modular)** - *Reference implementation*
-- Separated hooks + utils
-- Easier unit testing
-- Learning resource
-- Not primary version
 
 ### Where to Find What
 
