@@ -1,44 +1,60 @@
 #!/bin/bash
-# --------------------------------------------------------------
-# Claude Export Script – Safe Incremental Draft Mode
-# --------------------------------------------------------------
-# This script finds your most recent [Carousel]_YYYY-MM-DD.md
-# in /notes/claude-sessions/Carousel/, creates a new file called
-# Carousel_NEW_INSIGHTS.md containing only the new summary content
-# and hints on where to integrate it. Then it commits and pushes
-# that file to GitHub.
-# --------------------------------------------------------------
+# post_chat.sh — upgraded automation for Carousel Master session integration
 
-# Define paths
-SESSIONS_DIR="./notes/claude-sessions/Carousel"
-OUTPUT_FILE="$SESSIONS_DIR/Carousel_NEW_INSIGHTS.md"
+MASTER_FILE="Carousel_MASTER.md"
+SESSION_DIR="notes/claude-sessions/Carousel"
 
-# Ensure directory exists
-if [ ! -d "$SESSIONS_DIR" ]; then
-  echo "❌ Directory $SESSIONS_DIR not found."
+# Find the most recently modified session markdown file (excluding the master)
+LATEST_SESSION=$(ls -t $SESSION_DIR/Carousel_*.md | grep -v "MASTER" | head -n 1)
+
+if [ -z "$LATEST_SESSION" ]; then
+  echo "❌ No session files found in $SESSION_DIR."
   exit 1
 fi
 
-# Find the newest session file
-LATEST_FILE=$(ls -t "$SESSIONS_DIR"/Carousel_*.md 2>/dev/null | head -n 1)
+echo "🟣 Processing latest session: $(basename "$LATEST_SESSION")"
 
-if [ -z "$LATEST_FILE" ]; then
-  echo "❌ No Carousel session files found."
-  exit 1
-fi
+# Extract key parts from the session file
+SESSION_DATE=$(basename "$LATEST_SESSION" | grep -oE '[0-9]{2}_[0-9]{6}')
+SESSION_TITLE=$(head -n 1 "$LATEST_SESSION" | sed 's/# //')
+KEY_POINTS=$(grep -E '^[-*]' "$LATEST_SESSION" | head -n 10)
 
-# Write to the draft file
-echo "🟣 Creating new insight draft from: $LATEST_FILE"
-echo -e "---\n🆕 Suggested Integration – $(basename "$LATEST_FILE")\n---\n" > "$OUTPUT_FILE"
-echo -e "Below are the newly added insights from your most recent Claude session.\n" >> "$OUTPUT_FILE"
-echo -e "Manually integrate them into the relevant sections of Carousel_MASTER.md.\n" >> "$OUTPUT_FILE"
-echo -e "--------------------------------------------------------------\n" >> "$OUTPUT_FILE"
-cat "$LATEST_FILE" >> "$OUTPUT_FILE"
-echo -e "\n--------------------------------------------------------------\n✅ End of suggestions.\n" >> "$OUTPUT_FILE"
+# Create temporary snippet for integration
+TEMP_SNIPPET="notes/claude-sessions/Carousel/Session_Integration_${SESSION_DATE}.md"
 
-# Git stage and push
-git add "$OUTPUT_FILE"
-git commit -m "Add new Carousel insights draft from $(basename "$LATEST_FILE")"
+cat <<EOF > "$TEMP_SNIPPET"
+## ${SESSION_TITLE:-Session Update} — ${SESSION_DATE//_//}
+
+**Summary:** Automatic summary from \`$(basename "$LATEST_SESSION")\`.
+
+**Relevant Sections Updated:** (Add manually if needed)
+
+**Key Additions:**
+${KEY_POINTS:-_No bullet points detected; review manually._}
+
+---
+
+EOF
+
+echo "✅ Created session snippet: $TEMP_SNIPPET"
+
+# Insert snippet above the END marker in the master file
+awk -v snippet="$TEMP_SNIPPET" '
+  BEGIN { inserted=0 }
+  {
+    if (!inserted && /\*\*END OF MASTER DOCUMENTATION\*\*/) {
+      while ((getline line < snippet) > 0) print line
+      inserted=1
+    }
+    print
+  }
+' "$MASTER_FILE" > "${MASTER_FILE}.tmp" && mv "${MASTER_FILE}.tmp" "$MASTER_FILE"
+
+echo "✅ Integrated new session snippet into $MASTER_FILE"
+
+# Stage, commit, and push changes
+git add "$MASTER_FILE" "$TEMP_SNIPPET"
+git commit -m "Auto-integrated $(basename "$LATEST_SESSION") into master log"
 git push
 
-echo "✅ Done! Created and pushed Carousel_NEW_INSIGHTS.md"
+echo "🚀 Session successfully integrated and pushed to GitHub!"
