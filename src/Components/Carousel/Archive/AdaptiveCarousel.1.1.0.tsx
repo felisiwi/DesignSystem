@@ -3,17 +3,21 @@ import { motion, useMotionValue, animate, PanInfo } from 'framer-motion'
 import { addPropertyControls, ControlType } from 'framer'
 
 // ========================================
-// GESTURE DETECTION CONSTANTS (Conservative Thresholds)
+// GESTURE DETECTION CONSTANTS (Multi-dimensional Filtering)
 // ========================================
-const GLIDE_DISTANCE_HIGH_CONFIDENCE = 180  // was 145 - Harder to trigger T1
-const GLIDE_DISTANCE_MEDIUM = 120           // was 88 - Requires significant distance for T2
-const GLIDE_VELOCITY_MEDIUM = 120           // was 75 - Requires truly fast swipe for T2
-const GLIDE_ACCELERATION_MEDIUM = 30        // was 18 - Requires clearer "burst" for T2
-const GLIDE_DISTANCE_ENERGETIC = 140        // was 100 - Stronger distance needed for T3
-const GLIDE_VELOCITY_HIGH = 180             // was 110 - Higher velocity needed for T3
-const GLIDE_ACCELERATION_HIGH = 50          // was 35 - Clearer burst needed for T3
+const GLIDE_DISTANCE_HIGH_CONFIDENCE = 200  // Much harder to trigger T1
+const GLIDE_DISTANCE_MEDIUM = 160           // Requires very long swipe for T2
+const GLIDE_VELOCITY_MEDIUM = 120           // Requires truly fast swipe for T2
+const GLIDE_ACCELERATION_MEDIUM = 30        // Requires clearer "burst" for T2
+const GLIDE_DISTANCE_ENERGETIC = 180        // Stronger distance needed for T3
+const GLIDE_VELOCITY_HIGH = 180             // Higher velocity needed for T3
+const GLIDE_ACCELERATION_HIGH = 50          // Clearer burst needed for T3
 
-interface CarouselZombieProps {
+// Multi-dimensional filtering to prevent accidental glides
+const MIN_GLIDE_DURATION = 80  // ms - Glides should be longer gestures
+const MAX_GLIDE_VELOCITY = 600 // px/s - Very fast gestures are likely flicks
+
+interface AdaptiveCarouselProps {
   children: React.ReactNode
   columns?: number
   gap?: number
@@ -45,7 +49,7 @@ interface CarouselZombieProps {
   dotInactiveColor?: string
 }
 
-export default function CarouselZombie({
+export default function AdaptiveCarousel({
   children,
   columns = 1,
   gap = 8,
@@ -71,11 +75,12 @@ export default function CarouselZombie({
   dotGap = 8,
   dotColor = '#000000',
   dotInactiveColor = '#F2F2F2'
-}: CarouselZombieProps) {
+}: AdaptiveCarouselProps) {
   // Basic state
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemWidth, setItemWidth] = useState(0)
   const [containerWidth, setContainerWidth] = useState(0)
+  const [directionLock, setDirectionLock] = useState<'horizontal' | 'vertical' | null>(null)
   
   // Refs
   const containerRef = useRef<HTMLDivElement>(null)
@@ -157,8 +162,20 @@ export default function CarouselZombie({
       const stiffness = isMultiSkip ? glideStiffness : flickStiffness
       const damping = isMultiSkip ? glideDamping : flickDamping
 
-      // Two-Step Animation for precise stops
-      if (isMultiSkip) {
+      // DIFFERENT ANIMATION STRATEGY BASED ON COLUMNS
+      if (isMultiSkip && columns > 1) {
+        // Single-step animation for multi-column (prevents overshoot)
+        const multiColumnStiffness = Math.min(Math.max(glideStiffness * 1.25, 120), 200)
+        const multiColumnDamping = Math.min(Math.max(glideDamping * 1.8, 40), 80)
+        
+        await animate(x, targetX, {
+          type: "spring",
+          stiffness: multiColumnStiffness,
+          damping: multiColumnDamping,
+          velocity: velocity,
+        })
+      } else if (isMultiSkip) {
+        // Two-step animation for single-column (maintains smoothness)
         // Step 1: Soft glide for momentum and feel
         await animate(x, targetX, {
           type: "spring",
@@ -175,7 +192,7 @@ export default function CarouselZombie({
           velocity: 0,
         })
       } else {
-        // Single-step animation for flicks
+        // Standard flick animation
         await animate(x, targetX, {
           type: "spring",
           stiffness: stiffness,
@@ -194,9 +211,29 @@ export default function CarouselZombie({
     isAnimating.current = false  // Clear animation flag to allow immediate drag
     dragStartTime.current = Date.now()
     velocityHistory.current = []
+    setDirectionLock(null)  // Reset direction lock at start of each drag
   }
 
   const handleDrag = (event: any, info: PanInfo) => {
+    // Determine direction lock based on angle (Pure Angle-Based approach)
+    if (directionLock === null) {
+      const angle = Math.abs(Math.atan2(info.offset.y, info.offset.x) * 180 / Math.PI)
+      
+      if (angle < 30) {
+        // Mostly horizontal (< 30°) → lock to carousel
+        setDirectionLock('horizontal')
+      } else if (angle > 60) {
+        // Mostly vertical (> 60°) → allow page scroll
+        setDirectionLock('vertical')
+      }
+      // 30-60° = diagonal, no lock yet (wait for clearer direction)
+    }
+    
+    // Block page scroll only if locked horizontal
+    if (directionLock === 'horizontal' && event.cancelable) {
+      event.preventDefault()
+    }
+    
     velocityHistory.current.push(Math.abs(info.velocity.x))
   }
 
@@ -207,6 +244,7 @@ export default function CarouselZombie({
     const dragOffset = info.offset.x
     const dragDirection = dragOffset < 0 ? 1 : -1
     const distance = Math.abs(dragOffset)
+    const duration = Date.now() - dragStartTime.current
 
     // Calculate peak acceleration
     let peakAcceleration = 0
@@ -221,61 +259,68 @@ export default function CarouselZombie({
     let targetIndex = currentIndex
     let isMultiSkip = false
 
-    // P1 FIX: Align Velocity with Drag Direction (Prevents "Charge Up" Bounce)
-    if (
-      (dragDirection === 1 && info.velocity.x > 0) || 
-      (dragDirection === -1 && info.velocity.x < 0)
-    ) {
-      // If velocity opposes drag direction, zero it for stability
-      info.velocity.x = 0; 
-    }
-    
-    // TIERED GESTURE DETECTION (Conservative thresholds for better UX)
-    // Tier 1: High confidence - Long distance
-    if (distance > GLIDE_DISTANCE_HIGH_CONFIDENCE) {
-      const maxJump = 3  // Cap maximum jump to prevent huge leaps
-      const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelocityScaler)))
-      targetIndex = currentIndex + dragDirection * indexJump
-      isMultiSkip = true
-    }
-    // Tier 2: Medium confidence - All signals must agree
-    else if (
-      distance > GLIDE_DISTANCE_MEDIUM &&
-      velocity > GLIDE_VELOCITY_MEDIUM &&
-      peakAcceleration > GLIDE_ACCELERATION_MEDIUM
-    ) {
-      const maxJump = 3  // Cap maximum jump to prevent huge leaps
-      const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelocityScaler)))
-      targetIndex = currentIndex + dragDirection * indexJump
-      isMultiSkip = true
-    }
-    // Tier 3: Energetic gesture - Strong velocity OR burst
-    else if (
-      distance > GLIDE_DISTANCE_ENERGETIC &&
-      (velocity > GLIDE_VELOCITY_HIGH || peakAcceleration > GLIDE_ACCELERATION_HIGH)
-    ) {
-      const maxJump = 3  // Cap maximum jump to prevent huge leaps
-      const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelocityScaler)))
-      targetIndex = currentIndex + dragDirection * indexJump
-      isMultiSkip = true
-    }
-    // Tier 4: Default - single card snap or snap back
-    else {
+    // SAFETY RAIL: Catch extreme-acceleration flicks
+    if (peakAcceleration > 600 && distance < 170) {
+      isMultiSkip = false
       const distanceThreshold = itemWidth * (snapThreshold / 100)
       if (distance > distanceThreshold) {
         targetIndex = currentIndex + dragDirection
       } else {
         targetIndex = currentIndex
       }
-    }
-    
-    // P2 FIX: Downgrade 1-card glide to a snap
-    if (isMultiSkip && Math.abs(targetIndex - currentIndex) <= 1) {
-      isMultiSkip = false;
+    } else {
+      // WEIGHTED SCORING
+      let glideScore = 0
+      if (duration > 50) glideScore += 2
+      if (velocity < 1800) glideScore += 1
+      if (distance > 160) glideScore += 2
+      if (peakAcceleration < 600) glideScore += 1
+
+      if (glideScore < 5) {
+        isMultiSkip = false
+        const distanceThreshold = itemWidth * (snapThreshold / 100)
+        if (distance > distanceThreshold) {
+          targetIndex = currentIndex + dragDirection
+        } else {
+          targetIndex = currentIndex
+        }
+      } else {
+        // Tier detection for glides
+        isMultiSkip = true
+        if (distance > GLIDE_DISTANCE_HIGH_CONFIDENCE) {
+          const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler))
+          targetIndex = currentIndex + dragDirection * indexJump
+        } else if (
+          distance > GLIDE_DISTANCE_MEDIUM &&
+          velocity > GLIDE_VELOCITY_MEDIUM &&
+          peakAcceleration > GLIDE_ACCELERATION_MEDIUM
+        ) {
+          const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler))
+          targetIndex = currentIndex + dragDirection * indexJump
+        } else if (
+          distance > GLIDE_DISTANCE_ENERGETIC &&
+          (velocity > GLIDE_VELOCITY_HIGH || peakAcceleration > GLIDE_ACCELERATION_HIGH)
+        ) {
+          const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler))
+          targetIndex = currentIndex + dragDirection * indexJump
+        } else {
+          const distanceThreshold = itemWidth * (snapThreshold / 100)
+          if (distance > distanceThreshold) {
+            targetIndex = currentIndex + dragDirection
+          } else {
+            targetIndex = currentIndex
+          }
+        }
+      }
     }
 
-    // Execute the animation
-    goToIndex(targetIndex, info.velocity.x * dragDirection, isMultiSkip)
+    // FIX: Calculate velocity direction based on actual X-axis movement
+    const targetX = -targetIndex * itemWidthWithGap
+    const currentX = x.get()
+    const xMovementDirection = targetX > currentX ? 1 : -1
+    const correctedVelocity = Math.abs(info.velocity.x) * xMovementDirection
+
+    goToIndex(targetIndex, correctedVelocity, isMultiSkip)
     velocityHistory.current = []
   }
 
@@ -428,9 +473,11 @@ export default function CarouselZombie({
           flex: 1,
           overflow: 'hidden',
           position: 'relative',
-          touchAction: 'pan-y',
+          touchAction: 'auto',  // Changed from 'pan-x pinch-zoom' to allow directional lock
           overscrollBehavior: 'none',
           overscrollBehaviorX: 'none',
+          height: '100%',
+          minHeight: '200px',
           // APPLYING PADDING (like working version)
           paddingLeft: `${horizontalPadding}px`,
           paddingRight: `${horizontalPadding}px`,
@@ -609,7 +656,7 @@ export default function CarouselZombie({
   )
 }
 
-addPropertyControls(CarouselZombie, {
+addPropertyControls(AdaptiveCarousel, {
   children: {
     type: ControlType.Array,
     title: "Items",
