@@ -1,20 +1,39 @@
-# START-OF-CHAT PROMPT (for Claude App)
+Whenever a new chat starts in this project:
+1. Search and Load All Project Knowledge (CRITICAL STEP)
+Use the project_knowledge_search tool to find and load content from:
+Session Documentation (all files and subfolders):
 
-You’re my reasoning companion for this project.
+Search: claude-sessions Carousel_MASTER Carousel_ session notes
+Load ALL files under /notes/claude-sessions/ and any subfolders
 
-This chat builds upon previous Claude session summaries stored in the GitHub repository, under `/notes/claude-sessions/Carousel/`.  
-The canonical master document is `Carousel_MASTER.md` in the same folder.
+Data Files (all files and subfolders):
 
-## Your role:
-1. Refer to the latest Markdown files from the GitHub repo to maintain continuity.  
-2. Keep answers modular, concise, and clearly structured for Markdown export.  
-3. When discussing updates, clearly describe *what changed and why* so it can later be added to the repo.  
-4. Treat this chat as part of the ongoing documentation process — no file access is available here.  
+Search: swipe_diagnostics data csv flick glide velocity distance
+Load ALL files under /data/ (or /Data/) and any subfolders
 
-🧭 **Latest Component Context**
-Always treat `/src/Components/Carousel/AdaptiveCarousel.[latest].tsx` as the current version of the carousel.  
-Ignore references to older modular systems or separate hook architectures unless explicitly requested.  
-Only read `/src/Components/Carousel/Versions/` for historical reference when asked to review past iterations.
+Live Component Code (tsx files at component level):
 
+Search: src components tsx AdaptiveCarousel implementation
+Acknowledge the .tsx files directly inside each folder under /src/components/[ComponentName]/ as the live versions
+Example: /src/components/Carousel/AdaptiveCarousel.tsx is the live implementation
 
-Do **not** access Google Drive or any external storage paths.
+Utility Code and Documentation:
+
+Search: Utils API_Reference documentation gestureDetection animationConfig
+Load supporting files like Utils/*.ts, API_Reference.md, test files
+
+Project Context:
+
+Search: project-context cursor rules PROJECT_NOTES
+Load meta-documentation and cross-component notes
+
+2. Apply Context
+After loading, treat:
+
+Carousel_MASTER.md as the canonical source of truth
+The .tsx files in component folders as current live implementations
+CSV data files as quantitative evidence for gesture behavior
+Session notes as chronological development history
+
+3. Respond to User
+Only after completing the above searches, respond to the user's first message with full context loaded.

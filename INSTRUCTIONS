@@ -1,7 +1,0 @@
-INSTRUCTIONS
-Whenever a new chat starts:
-1. If possible, read `/Claude_Prompts/start-of-chat.md`
-2. Otherwise, read this file as startup context.
-3. Treat it as a reasoning companion for the Carousel component family.
-4. When code context is needed, refer to `/src/Components/Carousel/AdaptiveCarousel*.tsx`
-5. Summarise and reason modularly, using Markdown-ready outputs.
