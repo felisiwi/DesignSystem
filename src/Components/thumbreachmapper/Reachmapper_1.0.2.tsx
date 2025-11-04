@@ -40,6 +40,21 @@ interface PainComparison {
   result: 'more' | 'less' | 'same'
 }
 
+interface ExportData {
+  userName: string
+  handSize: HandSize | null
+  gripMode: GripMode | null
+  thumbRestZone: string | null
+  device: {
+    model: string
+    screenWidth: number
+    screenHeight: number
+    pixelDensity?: number
+  }
+  zones: ZoneData[]
+  averageTapTime: number
+}
+
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================
@@ -130,7 +145,7 @@ function getDeviceInfo() {
   }
 }
 
-function exportToCSV(data: any): void {
+function exportToCSV(data: ExportData): void {
   const date = new Date().toISOString().split('T')[0]
   const deviceName = data.device.model.replace(/\s+/g, '')
   const filename = `thumbreach_${data.userName}_${deviceName}_${date}.csv`
@@ -321,7 +336,7 @@ export default function ThumbReachMapper() {
     const painScores = calculatePainScores(painComparisons)
     const updatedZones = zoneData.map(z => ({
       ...z,
-      painReported: painfulZones.includes(z.zoneId),
+      painReported: painfulZones.indexOf(z.zoneId) !== -1,
       painScore: painScores.get(z.zoneId) || 0
     }))
     setZoneData(updatedZones)
@@ -346,7 +361,7 @@ export default function ThumbReachMapper() {
   
   const downloadResults = () => {
     const tapTimes = zoneData.slice(1).map(z => z.tapTime)
-    const avgTapTime = tapTimes.reduce((a, b) => a + b) / tapTimes.length
+    const avgTapTime = tapTimes.length > 0 ? tapTimes.reduce((a, b) => a + b) / tapTimes.length : 0
     
     exportToCSV({
       userName,
@@ -355,7 +370,7 @@ export default function ThumbReachMapper() {
       thumbRestZone,
       device: deviceInfo,
       zones: zoneData,
-      averageTapTime
+      averageTapTime: avgTapTime
     })
   }
   

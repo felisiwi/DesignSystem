@@ -17,15 +17,15 @@ Search: src components tsx AdaptiveCarousel implementation
 Acknowledge the .tsx files directly inside each folder under /src/components/[ComponentName]/ as the live versions
 Example: /src/components/Carousel/AdaptiveCarousel.tsx is the live implementation
 
-Utility Code and Documentation:
+Component Documentation:
 
-Search: Utils API_Reference documentation gestureDetection animationConfig
-Load supporting files like Utils/*.ts, API_Reference.md, test files
+Search: API_Reference documentation
+Load API_Reference.md and component documentation files
 
 Project Context:
 
-Search: project-context cursor rules PROJECT_NOTES
-Load meta-documentation and cross-component notes
+Search: PROJECT_NOTES project overview component index
+Load PROJECT_NOTES.md for component index and project context
 
 2. Apply Context
 After loading, treat:

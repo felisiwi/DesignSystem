@@ -16,15 +16,13 @@ A sophisticated, gesture-driven carousel component built with React and Framer M
 - 93.25% accurate gesture detection
 - Multi-tier animation system
 - Full accessibility support (WCAG 2.1 AA)
-- Modular architecture with reusable hooks
+- Monolithic architecture (single-file component)
 - Customizable styling and behavior
 
-**Current Version**: v1.1.0 (Monolithic)
+**Current Version**: v1.0.2 (Monolithic)
 
 **Quick Links**:
-- [API Reference](./src/Components/Carousel/API_Reference.md)
-- [Hooks Documentation](./src/Components/Carousel/Hooks/Hooks_Documentation.md)
-- [Utils Documentation](./src/Components/Carousel/Utils/Utils_Documentation.md)
+- [API Reference](./src/components/carousel/API_Reference.md)
 - [Version History](./notes/claude-sessions/Carousel/)
 
 ---
@@ -35,19 +33,26 @@ A sophisticated, gesture-driven carousel component built with React and Framer M
 /
 ├── notes/
 │   └── claude-sessions/
-│       └── Carousel/
-│           ├── Carousel_MASTER.md          ← Comprehensive overview
+│       ├── Carousel/
+│       │   ├── Carousel_MASTER.md          ← Comprehensive overview
+│       │   └── [session notes...]
+│       └── ThumbReachMapper/
+│           ├── Thumbreachmapper_MASTER.md
 │           └── [session notes...]
 ├── src/
-│   └── Components/
-│       └── Carousel/
-│           ├── API_Reference.md            ← API documentation
-│           ├── Hooks/
-│           │   └── Hooks_Documentation.md  ← Custom hooks guide
-│           ├── Utils/
-│           │   └── Utils_Documentation.md  ← Utility functions guide
-│           └── Versions/
-│               └── [version files...]
+│   └── components/
+│       ├── carousel/
+│       │   ├── AdaptiveCarousel.1.0.2.tsx  ← Current live version
+│       │   ├── API_Reference.md            ← API documentation
+│       │   └── Archive/
+│       │       └── [archived versions...]
+│       └── thumbreachmapper/
+│           ├── Reachmapper_1.0.2.tsx      ← Current live version
+│           └── Archive/
+│               └── [archived versions...]
+├── Scripts/
+│   ├── post_chat.sh                        ← Session integration script
+│   └── auto_commit.sh                      ← Auto-commit script
 └── PROJECT_NOTES.md                        ← This file
 ```
 
@@ -57,8 +62,8 @@ A sophisticated, gesture-driven carousel component built with React and Framer M
 
 ### Adding New Components
 
-1. Create component directory in `src/Components/[ComponentName]/`
-2. Document all versions in `Versions/` subdirectory
+1. Create component directory in `src/components/[componentname]/` (lowercase)
+2. Document all versions in `Archive/` subdirectory
 3. Create comprehensive documentation:
    - API Reference
    - Usage examples
@@ -79,6 +84,20 @@ A sophisticated, gesture-driven carousel component built with React and Framer M
 ## Contributing
 
 This is a personal design system project. For questions or issues, refer to the component-specific documentation or session notes.
+
+---
+
+---
+
+## Project Context for Claude & Cursor
+
+When working with Claude or Cursor, always load these files for context:
+- `/notes/claude-sessions/Carousel/Carousel_MASTER.md` - Comprehensive carousel documentation
+- `/notes/claude-sessions/ThumbReachMapper/Thumbreachmapper_MASTER.md` - Thumb Reach Mapper documentation
+- `/README.md` - Project overview
+- `/PROJECT_NOTES.md` - This file (component index and context)
+
+This ensures Claude and Cursor both use the latest master summaries and context when reasoning about components.
 
 ---
 

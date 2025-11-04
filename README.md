@@ -16,10 +16,12 @@ This design system is structured as a component library built with React and Typ
 
 ## 🧱 Project Structure
 /src
-  └── Components/
-      └── Carousel/         # Adaptive Carousel versions + API docs
-/Hooks                      # Reusable Framer + React motion hooks
-/Utils                      # Shared animation + math utilities
-/Data/Swipe diagnostics/    # CSV gesture analysis data
-/notes/claude-sessions/     # Claude documentation + session logs
-/tests                      # Automated gesture classification tests
+  └── components/
+      └── carousel/         # Adaptive Carousel versions + API docs
+      └── thumbreachmapper/ # Thumb Reach Mapper component
+/Data/
+  └── swipe_diagnostics/    # CSV gesture analysis data
+/notes/
+  └── claude-sessions/     # Claude documentation + session logs
+/Scripts/                  # Automation scripts (post_chat.sh, auto_commit.sh)
+/claude_prompts/           # Claude chat prompts
