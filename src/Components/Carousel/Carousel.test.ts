@@ -27,7 +27,7 @@ vi.mock('framer-motion', () => ({
 }));
 
 // Import the actual monolithic component
-import AdaptiveCarousel from './AdaptiveCarousel.1.0.2';
+import AdaptiveCarousel from './Archive/AdaptiveCarousel.1.0.2';
 
 describe('AdaptiveCarousel (Monolithic)', () => {
   test('renders without crashing', () => {

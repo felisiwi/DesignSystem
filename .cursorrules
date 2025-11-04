@@ -1,0 +1,48 @@
+# Component Development Rules
+
+## Versioning
+- Always increment version numbers in new files
+- Archive old versions in Archive/ subdirectory
+- Update PROJECT_NOTES.md component registry (auto-updates via git hooks)
+
+## Documentation
+- Update MASTER.md when adding significant features
+- Use claude-export to integrate session notes
+- Reference Data_analysis_MASTER.md for data insights
+
+## Code Style
+- Monolithic components for Framer compatibility
+- TypeScript strict mode
+- Framer Motion for animations
+- Accessibility first (WCAG 2.1 AA)
+
+## Component Structure
+- Latest version in component root directory
+- Archive older versions in Archive/ subdirectory
+- Use naming: ComponentName.X.Y.Z.tsx
+
+## Git Commit Format
+- Use format: [Component] Description
+- Examples:
+  - [Carousel] Fixed glide distance in 2-column mode
+  - [ThumbReachMapper] Added new calibration step
+  - [Docs] Updated API reference
+  - [Scripts] Added release notes generator
+
+## Testing
+- Run tests before committing: npm test
+- Update tests when adding features
+- Maintain 93.25%+ gesture detection accuracy for Carousel
+
+## File Organization
+- Components in src/components/[componentname]/
+- Documentation in notes/claude-sessions/[ComponentName]/
+- Data analysis in Data/Data_analysis_MASTER.md
+- Scripts in scripts/
+
+## Claude Integration
+- Always check PROJECT_NOTES.md for latest component versions
+- Load MASTER.md files for comprehensive context
+- Reference Data_analysis_MASTER.md for data-driven insights
+- Use claude-export after session to integrate notes
+

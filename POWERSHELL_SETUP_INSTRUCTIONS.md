@@ -53,7 +53,7 @@ function claude-export {
             Write-Host "`nProcessing component: $compName" -ForegroundColor Yellow
             # Use & bash (call operator) to ensure PowerShell properly passes arguments
             # No quotes around $compName - PowerShell passes it as a separate argument
-            & bash './post_chat.sh' $compName
+            & bash './scripts/post_chat.sh' $compName
             
             # Small delay between components to avoid git conflicts
             Start-Sleep -Milliseconds 500
@@ -65,7 +65,7 @@ function claude-export {
         # Process single component
         # Use & bash (call operator) to ensure PowerShell properly passes arguments
         # No quotes around $component - PowerShell passes it as a separate argument
-        & bash './post_chat.sh' $component
+        & bash './scripts/post_chat.sh' $component
     }
 }
 
@@ -116,7 +116,7 @@ claude-export Carousel
 - Check if the function exists: `Get-Command claude-export`
 
 ### "Cannot find path" error
-- Make sure you're in the project root directory (where `post_chat.sh` is located)
+- Make sure you're in the project root directory (where `scripts/post_chat.sh` is located)
 - Check that `notes/claude-sessions/` exists
 
 ### Still processing Carousel instead of your component
@@ -125,7 +125,7 @@ claude-export Carousel
 - **CRITICAL**: Variables should NOT have quotes: `$compName` not `"$compName"` (PowerShell passes unquoted variables correctly)
 - Try: `$env:DEBUG="true"; claude-export ThumbReachMapper` to see what arguments are received
 - Verify your function: `Get-Command claude-export | Select-Object -ExpandProperty Definition`
-- If you see `bash "./post_chat.sh"` (without `&`), that's the problem - it should be `& bash './post_chat.sh' $component`
+- If you see `bash "./post_chat.sh"` (without `&`), that's the problem - it should be `& bash './scripts/post_chat.sh' $component`
 - If you see quotes around variables like `"$component"`, remove them - use `$component` instead
 
 ---
@@ -135,7 +135,7 @@ claude-export Carousel
 When you run `claude-export ThumbReachMapper`:
 
 1. PowerShell function receives "ThumbReachMapper" via `$args[0]`
-2. Calls `& bash './post_chat.sh' ThumbReachMapper` (the `&` ensures arguments are passed correctly, and the variable is passed without quotes)
+2. Calls `& bash './scripts/post_chat.sh' ThumbReachMapper` (the `&` ensures arguments are passed correctly, and the variable is passed without quotes)
 3. Bash script:
    - Looks in `notes/claude-sessions/ThumbReachMapper/`
    - Finds newest `.md` file (excluding MASTER files)
@@ -147,6 +147,6 @@ When you run `claude-export` (no arguments):
 
 1. PowerShell function defaults to "all"
 2. Finds all directories in `notes/claude-sessions/`
-3. Loops through each one and calls `post_chat.sh` for each
+3. Loops through each one and calls `scripts/post_chat.sh` for each
 4. Processes: Carousel, ThumbReachMapper, and any future components
 

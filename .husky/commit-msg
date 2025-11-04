@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# Validate commit message format
+
+commit_msg=$(cat "$1")
+
+# Check if commit message follows format (optional - warns but doesn't block)
+if ! echo "$commit_msg" | grep -qE "^\[(Carousel|ThumbReachMapper|Docs|Scripts|Infra)\].*"; then
+  echo "⚠️  Warning: Commit message doesn't follow format [Component] Description"
+  echo "   Example: [Carousel] Fixed glide distance in 2-column mode"
+  echo "   Continuing anyway..."
+fi
+

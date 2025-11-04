@@ -40,7 +40,7 @@ They do not directly sync — instead, you manually save Markdown summaries from
 |------|----------|
 | `/notes/claude-sessions/[ComponentName]/` | Individual chat summaries per component |
 | `/notes/claude-sessions/[ComponentName]/*MASTER.md` | Canonical master document for each component |
-| `/post_chat.sh` | Automation script run by `claude-export` (handles single component) |
+| `/scripts/post_chat.sh` | Automation script run by `claude-export` (handles single component) |
 | `/claude-export-function.ps1` | PowerShell function definition (add to your $PROFILE) |
 | `/notes/Claude Prompts/` | Start-of-Chat and End-of-Chat prompt files |
 | `/PROJECT_NOTES.md` | Project context and component index for Claude & Cursor |

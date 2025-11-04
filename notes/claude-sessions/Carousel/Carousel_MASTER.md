@@ -2,7 +2,7 @@
 
 > **Document Purpose:** Complete reference for carousel development, serving creators, AI assistants, and developers.  
 > **Source of Truth:** Claude chat sessions in DesignSystem project (Oct 24 - Nov 3, 2025)  
-> **Current Version:** v1.1.0 (Monolithic)  
+> **Current Version:** v1.0.4 (Monolithic)  
 > **Key Achievement:** 93.25% gesture detection accuracy validated across 180+ real user swipes
 
 ---
@@ -45,8 +45,8 @@ A production-ready carousel component that understands user intent. Swipe slowly
 
 ### Current Version Status
 
-**v1.1.1 (Monolithic)**
-- 850+ lines, single file
+**v1.0.4 (Monolithic)**
+- 880+ lines, single file
 - Production-ready
 - Full feature set
 - Easy to copy/paste into Framer
@@ -90,11 +90,13 @@ v0.2.0 ────> v0.3.0 ────> v0.3.1
   │            └──────────────────────────> Animation separation (flick/glide)
   └───────────────────────────────────────> 4-Tier detection (93.25%)
 
-v1.0.0 ────> v1.0.1 ────> v1.1.0
-  │            │            │
-  │            │            └─────────────> Current version (monolithic)
-  │            └──────────────────────────> Jump cap (max 3 cards)
-  └───────────────────────────────────────> TypeScript migration
+v1.0.0 ────> v1.0.1 ────> v1.0.2 ────> v1.0.3 ────> v1.0.4
+  │            │            │            │            │
+  │            │            │            │            └─────────────> Current version (monolithic)
+  │            │            │            └──────────────────────────> Additional improvements
+  │            │            └───────────────────────────────────────> Documentation updates
+  │            └───────────────────────────────────────────────────> Jump cap (max 3 cards)
+  └────────────────────────────────────────────────────────────────> TypeScript migration
 
 v0.4.0 (Modular) ─────────────────────────> Reference implementation
 ```

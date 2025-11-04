@@ -1,0 +1,13 @@
+#!/bin/sh
+# Auto-update component registry before commit
+
+echo "🔄 Updating component registry..."
+
+# Run the version update script
+node scripts/update_all_component_versions.js
+
+# Stage the updated files
+git add PROJECT_NOTES.md COMPONENTS.md
+
+echo "✅ Component registry updated!"
+

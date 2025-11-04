@@ -27,7 +27,7 @@ function claude-export {
             Write-Host "`nProcessing component: $compName" -ForegroundColor Yellow
             # Use & bash (call operator) to ensure PowerShell properly passes arguments
             # No quotes around $compName - PowerShell passes it as a separate argument
-            & bash './post_chat.sh' $compName
+            & bash './scripts/post_chat.sh' $compName
             
             # Small delay between components to avoid git conflicts
             Start-Sleep -Milliseconds 500
@@ -39,7 +39,7 @@ function claude-export {
         # Process single component
         # Use & bash (call operator) to ensure PowerShell properly passes arguments
         # No quotes around $component - PowerShell passes it as a separate argument
-        & bash './post_chat.sh' $component
+        & bash './scripts/post_chat.sh' $component
     }
 }
 

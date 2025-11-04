@@ -6,9 +6,23 @@ This document contains links to detailed documentation and notes for all compone
 
 ## Components
 
-### Carousel
+## Component Registry
 
-A sophisticated, gesture-driven carousel component built with React and Framer Motion.
+Auto-generated list of all components and their latest versions.
+
+| Component | Latest Version | File | Status |
+|-----------|----------------|------|--------|
+| **Adaptive Carousel** | v1.0.4 | [`AdaptiveCarousel.1.0.4.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.4.tsx) | ✅ |
+| **Carouseldiagnostics** | unversioned | [`carousediagnostics.tsx`](./src/components/carouseldiagnostics/carousediagnostics.tsx) | ⚠️ Unversioned |
+| **Reachmapper** | v1.0.2 | [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx) | ✅ |
+
+---
+
+### Adaptive Carousel
+
+**Current Version**: v1.0.4
+
+**File**: [`AdaptiveCarousel.1.0.4.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.4.tsx)
 
 **Master Overview**: [Carousel_MASTER.md](./notes/claude-sessions/Carousel/Carousel_MASTER.md)
 
@@ -19,13 +33,210 @@ A sophisticated, gesture-driven carousel component built with React and Framer M
 - Monolithic architecture (single-file component)
 - Customizable styling and behavior
 
-**Current Version**: v1.0.2 (Monolithic)
+**Quick Links**:
+- [API Reference](./src/components/carousel/API_Reference.md)
+- [Version History](./notes/claude-sessions/Carousel/)
+
+---
+
+### Carouseldiagnostics
+
+**Current Version**: N/A
+
+**File**: [`carousediagnostics.tsx`](./src/components/carouseldiagnostics/carousediagnostics.tsx)
+
+**Purpose**: Diagnostic tool for analyzing carousel swipe gestures
+
+**Quick Links**:
+- [Documentation](./src/components/carouseldiagnostics/carouseldiagnostics_documentation.md)
+- [Analysis](./Data/swipe_diagnostics/CarouselDiagnostics_analysis.md)
+
+---
+
+### Reachmapper
+
+**Current Version**: v1.0.2
+
+**File**: [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx)
+
+**Master Overview**: [Thumbreachmapper_MASTER.md](./notes/claude-sessions/ThumbReachMapper/Thumbreachmapper_MASTER.md)
+
+---
+
+
+## Component Registry
+
+Auto-generated list of all components and their latest versions.
+
+| Component | Latest Version | File | Status |
+|-----------|----------------|------|--------|
+| **Adaptive Carousel** | v1.0.4 | [`AdaptiveCarousel.1.0.4.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.4.tsx) | ✅ |
+| **Carouseldiagnostics** | unversioned | [`carousediagnostics.tsx`](./src/components/carouseldiagnostics/carousediagnostics.tsx) | ⚠️ Unversioned |
+| **Reachmapper** | v1.0.2 | [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx) | ✅ |
+
+---
+
+### Adaptive Carousel
+
+**Current Version**: v1.0.4
+
+**File**: [`AdaptiveCarousel.1.0.4.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.4.tsx)
+
+**Master Overview**: [Carousel_MASTER.md](./notes/claude-sessions/Carousel/Carousel_MASTER.md)
+
+**Key Features**:
+- 93.25% accurate gesture detection
+- Multi-tier animation system
+- Full accessibility support (WCAG 2.1 AA)
+- Monolithic architecture (single-file component)
+- Customizable styling and behavior
 
 **Quick Links**:
 - [API Reference](./src/components/carousel/API_Reference.md)
 - [Version History](./notes/claude-sessions/Carousel/)
 
 ---
+
+### Carouseldiagnostics
+
+**Current Version**: N/A
+
+**File**: [`carousediagnostics.tsx`](./src/components/carouseldiagnostics/carousediagnostics.tsx)
+
+**Purpose**: Diagnostic tool for analyzing carousel swipe gestures
+
+**Quick Links**:
+- [Documentation](./src/components/carouseldiagnostics/carouseldiagnostics_documentation.md)
+- [Analysis](./Data/swipe_diagnostics/CarouselDiagnostics_analysis.md)
+
+---
+
+### Reachmapper
+
+**Current Version**: v1.0.2
+
+**File**: [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx)
+
+**Master Overview**: [Thumbreachmapper_MASTER.md](./notes/claude-sessions/ThumbReachMapper/Thumbreachmapper_MASTER.md)
+
+---
+
+
+## Component Registry
+
+Auto-generated list of all components and their latest versions.
+
+| Component | Latest Version | File | Status |
+|-----------|----------------|------|--------|
+| **Adaptive Carousel** | v1.0.4 | [`AdaptiveCarousel.1.0.4.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.4.tsx) | ✅ |
+| **Carouseldiagnostics** | unversioned | [`carousediagnostics.tsx`](./src/components/carouseldiagnostics/carousediagnostics.tsx) | ⚠️ Unversioned |
+| **Reachmapper** | v1.0.2 | [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx) | ✅ |
+
+---
+
+### Adaptive Carousel
+
+**Current Version**: v1.0.4
+
+**File**: [`AdaptiveCarousel.1.0.4.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.4.tsx)
+
+**Master Overview**: [Carousel_MASTER.md](./notes/claude-sessions/Carousel/Carousel_MASTER.md)
+
+**Key Features**:
+- 93.25% accurate gesture detection
+- Multi-tier animation system
+- Full accessibility support (WCAG 2.1 AA)
+- Monolithic architecture (single-file component)
+- Customizable styling and behavior
+
+**Quick Links**:
+- [API Reference](./src/components/carousel/API_Reference.md)
+- [Version History](./notes/claude-sessions/Carousel/)
+
+---
+
+### Carouseldiagnostics
+
+**Current Version**: N/A
+
+**File**: [`carousediagnostics.tsx`](./src/components/carouseldiagnostics/carousediagnostics.tsx)
+
+**Purpose**: Diagnostic tool for analyzing carousel swipe gestures
+
+**Quick Links**:
+- [Documentation](./src/components/carouseldiagnostics/carouseldiagnostics_documentation.md)
+- [Analysis](./Data/swipe_diagnostics/CarouselDiagnostics_analysis.md)
+
+---
+
+### Reachmapper
+
+**Current Version**: v1.0.2
+
+**File**: [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx)
+
+**Master Overview**: [Thumbreachmapper_MASTER.md](./notes/claude-sessions/ThumbReachMapper/Thumbreachmapper_MASTER.md)
+
+---
+
+
+## Component Registry
+
+Auto-generated list of all components and their latest versions.
+
+| Component | Latest Version | File | Status |
+|-----------|----------------|------|--------|
+| **Adaptive Carousel** | v1.0.4 | [`AdaptiveCarousel.1.0.4.tsx`](./src\components\carousel\AdaptiveCarousel.1.0.4.tsx) | ✅ |
+| **Carouseldiagnostics** | unversioned | [`carousediagnostics.tsx`](./src\components\carouseldiagnostics\carousediagnostics.tsx) | ⚠️ Unversioned |
+| **Reachmapper** | v1.0.2 | [`Reachmapper_1.0.2.tsx`](./src\components\thumbreachmapper\Reachmapper_1.0.2.tsx) | ✅ |
+
+---
+
+### Adaptive Carousel
+
+**Current Version**: v1.0.4
+
+**File**: [`AdaptiveCarousel.1.0.4.tsx`](./src\components\carousel\AdaptiveCarousel.1.0.4.tsx)
+
+**Master Overview**: [Carousel_MASTER.md](./notes/claude-sessions/Carousel/Carousel_MASTER.md)
+
+**Key Features**:
+- 93.25% accurate gesture detection
+- Multi-tier animation system
+- Full accessibility support (WCAG 2.1 AA)
+- Monolithic architecture (single-file component)
+- Customizable styling and behavior
+
+**Quick Links**:
+- [API Reference](./src/components/carousel/API_Reference.md)
+- [Version History](./notes/claude-sessions/Carousel/)
+
+---
+
+### Carouseldiagnostics
+
+**Current Version**: N/A
+
+**File**: [`carousediagnostics.tsx`](./src\components\carouseldiagnostics\carousediagnostics.tsx)
+
+**Purpose**: Diagnostic tool for analyzing carousel swipe gestures
+
+**Quick Links**:
+- [Documentation](./src/components/carouseldiagnostics/carouseldiagnostics_documentation.md)
+- [Analysis](./Data/swipe_diagnostics/CarouselDiagnostics_analysis.md)
+
+---
+
+### Reachmapper
+
+**Current Version**: v1.0.2
+
+**File**: [`Reachmapper_1.0.2.tsx`](./src\components\thumbreachmapper\Reachmapper_1.0.2.tsx)
+
+**Master Overview**: [Thumbreachmapper_MASTER.md](./notes/claude-sessions/ThumbReachMapper/Thumbreachmapper_MASTER.md)
+
+---
+
 
 ## Documentation Structure
 
@@ -42,7 +253,7 @@ A sophisticated, gesture-driven carousel component built with React and Framer M
 ├── src/
 │   └── components/
 │       ├── carousel/
-│       │   ├── AdaptiveCarousel.1.0.2.tsx  ← Current live version
+│       │   ├── AdaptiveCarousel.1.0.4.tsx  ← Current live version
 │       │   ├── API_Reference.md            ← API documentation
 │       │   └── Archive/
 │       │       └── [archived versions...]
@@ -96,8 +307,24 @@ When working with Claude or Cursor, always load these files for context:
 - `/notes/claude-sessions/ThumbReachMapper/Thumbreachmapper_MASTER.md` - Thumb Reach Mapper documentation
 - `/README.md` - Project overview
 - `/PROJECT_NOTES.md` - This file (component index and context)
+- `/README_WORKFLOW_AUTOMATION.md` - Automation commands and workflows reference
 
 This ensures Claude and Cursor both use the latest master summaries and context when reasoning about components.
+
+## Automation & Workflow Tools
+
+**Quick Reference:** See **[README_WORKFLOW_AUTOMATION.md](./README_WORKFLOW_AUTOMATION.md)** for complete documentation.
+
+**Available Commands:**
+- `claude-export` - Auto-update component MASTER docs from latest session
+- `claude-export [Component]` - Update specific component
+- `claude-sync` - Quick commit & push of session notes
+- `npm run release-notes v1.0.5` - Generate release notes
+- `npm run update-components` - Manually update component registry
+
+**Auto-Running:**
+- Git hooks update component registry on every commit
+- Commit message validation (warns on wrong format)
 
 ---
 

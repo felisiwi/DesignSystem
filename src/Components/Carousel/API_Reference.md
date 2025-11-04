@@ -1,4 +1,4 @@
-# AdaptiveCarousel v1.1.0 - API Reference
+# AdaptiveCarousel v1.0.4 - API Reference
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@
 The main carousel component with full gesture support and customization options.
 
 ```tsx
-import Adapt from './AdaptiveCarousel.v1.1.0'
+import Adapt from './AdaptiveCarousel.v1.0.4'
 
 <Adapt {...props}>
   {children}
@@ -327,7 +327,7 @@ interface LayoutParams {
 ### Basic Usage
 
 ```tsx
-import Adapt from './AdaptiveCarousel.v1.1.0'
+import Adapt from './AdaptiveCarousel.v1.0.4'
 
 function MyCarousel() {
   return (
@@ -343,7 +343,7 @@ function MyCarousel() {
 ### Advanced Configuration
 
 ```tsx
-import Adapt from './AdaptiveCarousel.v1.1.0'
+import Adapt from './AdaptiveCarousel.v1.0.4'
 
 function AdvancedCarousel() {
   return (
@@ -412,16 +412,16 @@ console.log(width) // 366
 
 ## Migration Guide
 
-### From v1.0.0 to v1.1.0
+### From v1.0.4 to v1.0.4
 
 The refactored version is a drop-in replacement with no breaking changes:
 
 ```tsx
-// Before (v1.0.0)
-import Adapt from './AdaptiveCarousel.v1.0.0'
+// Before (v1.0.4)
+import Adapt from './AdaptiveCarousel.v1.0.4'
 
-// After (v1.1.0)
-import Adapt from './AdaptiveCarousel.v1.1.0'
+// After (v1.0.4)
+import Adapt from './AdaptiveCarousel.v1.0.4'
 
 // No other changes required!
 ```
