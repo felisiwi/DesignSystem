@@ -5,12 +5,12 @@ import { addPropertyControls, ControlType } from 'framer'
 // ========================================
 // GESTURE DETECTION CONSTANTS (Multi-dimensional Filtering)
 // ========================================
-// Screen-width based absolute thresholds (optimized for ~390px mobile)
-const GLIDE_DISTANCE_HIGH_CONFIDENCE = 195  // ~50% of phone screen
-const GLIDE_DISTANCE_MEDIUM = 156           // ~40% of phone screen
+// Screen-width based absolute thresholds (optimized for 2-column + 1-column usage)
+const GLIDE_DISTANCE_HIGH_CONFIDENCE = 170  // Lowered from 195 (better for 2-column)
+const GLIDE_DISTANCE_MEDIUM = 140           // Lowered from 156 (better for 2-column)
 const GLIDE_VELOCITY_MEDIUM = 120           // Requires truly fast swipe for T2
 const GLIDE_ACCELERATION_MEDIUM = 30        // Requires clearer "burst" for T2
-const GLIDE_DISTANCE_ENERGETIC = 176        // ~45% of phone screen
+const GLIDE_DISTANCE_ENERGETIC = 155        // Lowered from 176 (better for 2-column)
 const GLIDE_VELOCITY_HIGH = 180             // Higher velocity needed for T3
 const GLIDE_ACCELERATION_HIGH = 50          // Clearer burst needed for T3
 
@@ -265,7 +265,7 @@ export default function AdaptiveCarousel({
     let targetIndex = currentIndex
     let isMultiSkip = false
 
-    // SAFETY RAIL: Catch extreme-acceleration flicks
+    // SAFETY RAIL: Catch extreme-acceleration flicks (works well for both column configurations)
     if (peakAcceleration > 600 && distance < 175) {
       isMultiSkip = false
       const distanceThreshold = itemWidth * (snapThreshold / 100)
@@ -279,7 +279,7 @@ export default function AdaptiveCarousel({
       let glideScore = 0
       if (duration > 40) glideScore += 2          // Lowered from 50ms
       if (velocity < 2000) glideScore += 1        // Raised from 1800
-      if (distance > 160) glideScore += 2         // Changed to absolute 160px
+      if (distance > 140) glideScore += 2         // Lowered from 160
       if (peakAcceleration < 600) glideScore += 1
 
       if (glideScore < 4) {                       // Lowered from 5

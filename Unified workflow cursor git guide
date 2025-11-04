@@ -1,0 +1,390 @@
+Claude × Cursor × GitHub – Integrated Workflow Guide
+
+Version: 1.0
+Owner: Felix Isidorsson
+Scope: Reproducible setup for code-first ideation, reliable context in chats, and durable documentation.
+
+0) Why this setup works
+
+One source of truth (GitHub). All context (code, data, docs, session notes) lives in the repo. Every tool reads from here.
+
+Clear roles per tool.
+
+Cursor → coding, tests, quick refactors, and automatic delta commits.
+
+Claude Projects (desktop/web) → reasoning & design iteration with guaranteed repo context.
+
+Claude Code (claude.ai/code) → deep repo browsing & scripted tasks when you need the agent inside the filesystem sandbox.
+
+Local CLI (PowerShell + bash) → repeatable sync/append tasks (claude-export, claude-sync) into your docs.
+
+Stateless chats, stateful repo. If a chat hits limits, you start a new one and summarise → saved as Markdown → appended to the master doc by claude-export. Nothing is trapped in a conversation.
+
+1) Required repo structure (works for any component)
+
+Use these top-level folders (capitalisation and spaces matter; prefer PascalCase for components and underscores for multi-word folders):
+
+/Claude_Prompts/
+  start-of-chat.md
+  end-of-chat.md
+  claude-local-setup.md           (optional helper notes)
+
+ /notes/
+  /claude-sessions/
+    /<ComponentName>/
+      <ComponentName>_MASTER.md   (canonical doc)
+      <ComponentName>_YY_MMDD.md  (per-session summaries)
+
+ /Data/
+  /swipe_diagnostics/             (CSV or data inputs)
+
+ /src/
+  /Components/
+    /<ComponentName>/
+      <live>.tsx                  (current live implementation)
+      API_Reference.md
+      <ComponentName>.test.ts
+      /Utils/
+        *.ts
+        Utils_Documentation.md
+
+ /cursor/
+  /rules/
+    project-context.md
+
+ .gitignore
+ LICENSE
+ README.md
+ PROJECT_NOTES.md
+ auto_commit.sh                   (Cursor auto-delta script)
+ post_chat.sh                     (session → MASTER append)
+ package.json / tsconfig / vitest files (as applicable)
+
+
+Naming convention
+
+Live component = the .tsx file directly inside /src/Components/<ComponentName>/.
+
+Older versions, if kept, go in a Versions/ subfolder.
+
+Session files: Carousel_07_021125.md style is fine; keep a single _MASTER.md.
+
+2) GitHub, Cursor and Claude – linkage
+2.1 GitHub ↔ Cursor
+
+Open repo folder in Cursor.
+
+Initialise Git if needed: git init → add remote → git push -u origin main.
+
+Sign into GitHub in Cursor (Command Palette → “Sign in to GitHub”).
+
+Confirm the VCS panel tracks changes.
+
+2.2 GitHub ↔ Claude Projects (desktop/web)
+
+In Claude, create a Project.
+
+In Files, add your GitHub repo (content card shows as owner/repo • main).
+
+In Project → Instructions, paste the startup routine (section 4 below).
+
+Turn Memory OFF for this project (we rely on the repo, not memory).
+
+2.3 GitHub ↔ Claude Code
+
+Open claude.ai/code, attach the same repo.
+
+This environment mounts the repo to /mnt/project/ and can list/browse it.
+
+3) Cursor auto-delta commits (keeps a local “paper trail”)
+
+We save succinct “deltas” when you’re actively editing, without spamming history.
+
+auto_commit.sh (repo root):
+
+#!/usr/bin/env bash
+# Commit any code changes once per minute if there are diffs.
+
+while true; do
+  # Only code & docs; adjust globs as needed
+  if git status --porcelain -- \
+      "src/**" "notes/**" "Claude_Prompts/**" "Data/**" \
+      "*.md" "*.ts" "*.tsx" | grep -q .; then
+    TS=$(date +"%Y-%m-%d %H:%M")
+    git add -A
+    git commit -m "delta: changes detected @ ${TS}"
+    git push
+  fi
+  sleep 60
+done
+
+
+Run it (Cursor terminal):
+
+chmod +x auto_commit.sh
+./auto_commit.sh
+
+
+Tip: keep this running only while you’re actively iterating. It commits only if there are changes.
+
+4) Claude Project startup instructions (the reliable loader)
+
+Paste this into Project → Instructions:
+
+Whenever a new chat starts in this project, do this before answering:
+
+1) Search & load repo knowledge (CRITICAL)
+   - Session docs:
+     Search: claude-sessions <ComponentName>_MASTER <ComponentName>_ session notes
+     Load ALL files under /notes/claude-sessions/ and subfolders
+   - Data:
+     Search: swipe_diagnostics data csv flick glide velocity distance
+     Load ALL files under /Data/ and subfolders
+   - Live component code:
+     Search: src components tsx <ComponentName> implementation
+     Treat the .tsx directly in /src/Components/<ComponentName>/ as the LIVE version
+   - Utilities & docs:
+     Search: Utils API_Reference documentation gestureDetection animationConfig
+     Load Utils/*.ts, API_Reference.md, tests
+   - Project meta:
+     Search: project-context PROJECT_NOTES
+     Load /cursor/rules/project-context.md and PROJECT_NOTES.md
+
+2) Apply context
+   - Treat <ComponentName>_MASTER.md as canonical documentation
+   - Treat live .tsx as current implementation
+   - Treat CSVs as quantitative evidence
+   - Treat session notes as chronological history
+
+3) Respond
+   - Only after the above are loaded, answer the first user message.
+
+
+For multiple components, either keep a single Project and mention all component names in the searches, or create one Project per component for cleaner isolation.
+Each new component = new chat thread (clear naming).
+
+5) Start-/End-of-chat prompts (Claude_Prompts)
+
+Keep plain, app-safe prompts (no file writes).
+
+Claude_Prompts/start-of-chat.md
+
+“You are my reasoning companion…”
+
+“Load repo context per Project Instructions (session docs, data, live code, utils, meta)…”
+
+“Acknowledge live .tsx location and MASTER doc…”
+
+“Keep answers modular, concise, and export-friendly…”
+
+Claude_Prompts/end-of-chat.md
+
+“Generate a Session Summary with headings + bullets (decisions, changes, rationale).”
+
+“Name it: <ComponentName>_<YY_MMDD>.md.”
+
+“I will manually save this into /notes/claude-sessions/<ComponentName>/.”
+
+“Do not attempt to write files; just output Markdown.”
+
+Then you copy/paste the summary into the right folder and commit.
+
+6) Local CLI helpers (PowerShell + bash)
+6.1 post_chat.sh – append latest session to MASTER
+
+(already working in your repo; generic version below)
+
+#!/usr/bin/env bash
+COMPONENT="${1:-Carousel}" # allow passing a component, defaults to Carousel
+BASE="notes/claude-sessions/${COMPONENT}"
+MASTER_FILE="${BASE}/${COMPONENT}_MASTER.md"
+
+LATEST_SESSION=$(ls -t "${BASE}/${COMPONENT}"_*.md 2>/dev/null | grep -v "MASTER" | head -n 1)
+[ -z "$LATEST_SESSION" ] && { echo "No session files in ${BASE}"; exit 1; }
+
+DATE_TAG=$(basename "$LATEST_SESSION" | grep -oE '[0-9]{2}_[0-9]{6}')
+TEMP_SNIPPET="${BASE}/Session_Integration_${DATE_TAG}.md"
+
+cat <<EOF > "$TEMP_SNIPPET"
+## $(basename "$LATEST_SESSION") — ${DATE_TAG//_//}
+
+**Summary:** extracted from \`$(basename "$LATEST_SESSION")\`.
+(Insert concise “what changed” bullets here if needed.)
+---
+EOF
+
+awk -v s="$TEMP_SNIPPET" '
+  BEGIN {ins=0}
+  { if(!ins && /\*\*END OF MASTER DOCUMENTATION\*\*/) {
+      while((getline l < s) > 0) print l; ins=1
+    }
+    print
+  }' "$MASTER_FILE" > "${MASTER_FILE}.tmp" && mv "${MASTER_FILE}.tmp" "$MASTER_FILE"
+
+git add "$MASTER_FILE" "$TEMP_SNIPPET"
+git commit -m "Append ${COMPONENT} session: $(basename "$LATEST_SESSION")"
+git push
+echo "Done: appended into ${MASTER_FILE}"
+
+
+Run:
+
+bash ./post_chat.sh Carousel
+
+6.2 PowerShell aliases (so you can type short commands)
+
+Open your profile:
+
+notepad $PROFILE
+
+
+Add:
+
+# allow 'bash' inside PowerShell (Git for Windows path)
+Set-Alias bash "C:\Program Files\Git\bin\bash.exe"
+
+# export = run the append script for the active component (default: Carousel)
+function claude-export { param($component="Carousel"); bash "./post_chat.sh" $component }
+
+# quick commit/push of notes
+function claude-sync { git add .; git commit -m "Sync Claude session notes"; git push }
+
+
+Restart PowerShell. Now you can run:
+
+claude-export        # appends latest session → MASTER for Carousel
+claude-export Carousel
+claude-sync
+
+7) Day-to-day workflow (optimized)
+
+Create a dedicated chat per component in your Claude Project.
+Name them like: Carousel – v1.1 ideation, Carousel – diagnostics, etc.
+
+Ideate/iterate in Claude (Project) while coding in Cursor.
+
+Cursor’s auto_commit.sh runs while you edit to capture deltas every minute.
+
+When a chat nears limits, simply ask:
+“Generate the Session Summary per our end-of-chat prompt.”
+Copy the Markdown → save as /notes/claude-sessions/<Component>/<Component>_<YY_MMDD>.md → commit.
+
+Run claude-export to append a small “integration log” block into <Component>_MASTER.md.
+(We append; we never regenerate the master automatically.)
+
+New component?
+
+Create /src/Components/<NewComponent>/ with a live .tsx.
+
+Create /notes/claude-sessions/<NewComponent>/<NewComponent>_MASTER.md.
+
+Start a new chat thread for it (clean context), keep Memory OFF.
+
+8) Files we include by default (and why)
+
+.gitignore – ignore node_modules, build outputs, logs, temp, OS files. Example:
+
+node_modules/
+dist/
+.DS_Store
+*.log
+.env
+.cache/
+
+
+LICENSE – pick MIT (or your choice) so code/doc reuse is clear.
+
+README.md – project overview + “How to run”, link to this guide.
+
+PROJECT_NOTES.md – higher-level design notes not tied to one component.
+
+cursor/rules/project-context.md – what Cursor should “know” (brand tone, design goals, constraints).
+
+Claude_Prompts/start-of-chat.md & end-of-chat.md – app-safe prompts Claude reads at session start/end.
+
+auto_commit.sh – minute-based delta saver while you’re editing.
+
+post_chat.sh – safe, append-only master integrator.
+
+Tests/Configs – vitest, tsconfig, etc., as your stack requires.
+
+9) Common pitfalls & fixes
+
+Claude “can’t find files”
+
+Ensure the GitHub content card is attached to the Project.
+
+Paths in Project Instructions must match your repo (Claude_Prompts, not Claude Prompts).
+
+Capitalisation matters: Data/ ≠ data/.
+
+Desktop/web chat says /mnt/project/INSTRUCTIONS only
+
+That means the Project has no repo mounted to it. Add the GitHub card to the Project’s Files.
+
+MASTER doc overwritten
+
+Our workflow is append-only. We never regenerate MASTER automatically. Keep it that way.
+
+Auto-commit is too chatty
+
+Stop the script while idle. Or add glob filters to restrict what it watches.
+
+Hit Claude message limits
+
+End the chat with the Session Summary, save it, start a new chat in the same Project.
+
+10) Minimal “Start-of-chat” & “End-of-chat” (copy into /Claude_Prompts/)
+
+start-of-chat.md
+
+You are my reasoning companion for this project. Before replying:
+
+• Load repo context per Project Instructions:
+  – Session docs under /notes/claude-sessions/
+  – Data in /Data/swipe_diagnostics/
+  – Live .tsx under /src/Components/<ComponentName>/
+  – Utils and API_Reference.md
+  – Project meta in /cursor/rules/project-context.md and PROJECT_NOTES.md
+
+• Treat <ComponentName>_MASTER.md as canonical.
+• Keep answers modular, concise, export-ready.
+
+
+end-of-chat.md
+
+Output a single Markdown document:
+
+# <ComponentName> – Session <YY-MMDD>
+## Summary
+• Key decisions
+• What changed (code & rationale)
+• Open questions / next steps
+
+## References
+• Files touched (paths)
+• Data cited (CSV rows/columns if relevant)
+
+(I will save this into /notes/claude-sessions/<ComponentName>/ and run `claude-export`.)
+
+11) When to use which Claude surface
+
+Claude Projects (desktop/web) – your default place for ideation & design discussion with guaranteed repo context (thanks to Project Instructions).
+
+Claude Code – when you want the agent inside a mounted filesystem (quick grep, transforms, scaffolds) without leaving the browser.
+
+Local CLI – when you want predictable, scriptable tasks (append session to MASTER, batch tidy, etc.).
+
+12) Quick start checklist (for any new repo)
+
+Create folders/files exactly as in Section 1.
+
+Add Project Instructions from Section 4; attach the GitHub repo card; turn Memory OFF.
+
+Add auto_commit.sh and post_chat.sh; chmod +x both.
+
+Set PowerShell aliases for claude-export and claude-sync.
+
+Start a new chat per component; name threads clearly.
+
+When a chat fills up: generate Session Summary → save Markdown → claude-export.
