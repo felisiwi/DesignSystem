@@ -4307,7 +4307,9 @@ Only concise summaries or diffs are stored here — not full session transcripts
 
 ---
 
-## Carousel_08_04112025.md — 
+
+
+## Carousel_08_04112025.md — 08
 
 **Summary:** Automatic summary from `Carousel_08.md`.
 
