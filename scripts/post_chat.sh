@@ -31,12 +31,12 @@ if [ -z "$MASTER_FILE" ]; then
   exit 1
 fi
 
-# Find the most recently modified session markdown file (excluding the master)
-LATEST_SESSION=$(find "$SESSION_DIR" -maxdepth 1 -name "*.md" -type f ! -name "*MASTER*" -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -n 1 | cut -d' ' -f2-)
+# Find the most recently modified session markdown file (excluding the master and Session_Integration files)
+LATEST_SESSION=$(find "$SESSION_DIR" -maxdepth 1 -name "*.md" -type f ! -name "*MASTER*" ! -name "Session_Integration*" -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -n 1 | cut -d' ' -f2-)
 
 # Fallback for systems without find -printf (like macOS)
 if [ -z "$LATEST_SESSION" ]; then
-  LATEST_SESSION=$(ls -t "$SESSION_DIR"/*.md 2>/dev/null | grep -v "MASTER" | head -n 1)
+  LATEST_SESSION=$(ls -t "$SESSION_DIR"/*.md 2>/dev/null | grep -v "MASTER" | grep -v "Session_Integration" | head -n 1)
 fi
 
 if [ -z "$LATEST_SESSION" ]; then
