@@ -10,6 +10,7 @@
 ## 📖 Table of Contents
 
 **Quick Navigation:**
+
 - **For Quick Reference:** [Section 1: TL;DR](#section-1-tldr-executive-summary)
 - **For Development History:** [Section 2: Timeline & Evolution](#section-2-timeline--evolution)
 - **For User Research:** [Section 3: User Behavior Analysis](#section-3-user-behavior-analysis--csv-insights)
@@ -34,34 +35,34 @@ A production-ready carousel component that understands user intent. Swipe slowly
 
 ### Key Metrics
 
-| Metric | Value | Validation |
-|--------|-------|------------|
-| **Gesture Accuracy** | 93.25% | 180 swipes, 6 users, empirical testing |
-| **Users Tested** | Felix, Pierre, Hani, Ben, Max, Caitlin | Diverse swipe styles (controlled to extreme) |
-| **False Positive Rate** | 6.75% | Acceptable trade-off for natural feel |
-| **Supported Gestures** | Flick, Glide, Snap-back | 4-tier detection system |
-| **Animation Smoothness** | 60fps+ | Hardware-accelerated transforms |
-| **Accessibility** | WCAG 2.1 AA | Keyboard nav, ARIA, screen reader |
+| Metric                   | Value                                  | Validation                                   |
+| ------------------------ | -------------------------------------- | -------------------------------------------- |
+| **Gesture Accuracy**     | 93.25%                                 | 180 swipes, 6 users, empirical testing       |
+| **Users Tested**         | Felix, Pierre, Hani, Ben, Max, Caitlin | Diverse swipe styles (controlled to extreme) |
+| **False Positive Rate**  | 6.75%                                  | Acceptable trade-off for natural feel        |
+| **Supported Gestures**   | Flick, Glide, Snap-back                | 4-tier detection system                      |
+| **Animation Smoothness** | 60fps+                                 | Hardware-accelerated transforms              |
+| **Accessibility**        | WCAG 2.1 AA                            | Keyboard nav, ARIA, screen reader            |
 
 ### Current Version Status
 
 **v1.0.4 (Monolithic)**
+
 - 880+ lines, single file
 - Production-ready
 - Full feature set
 - Easy to copy/paste into Framer
 
-
 ### Where to Find What
 
-| Need | Go To |
-|------|-------|
-| **Use the component** | [Section 8: Getting Started](#section-8-getting-started-guide) |
-| **Understand decisions** | [Section 2: Timeline](#section-2-timeline--evolution) |
-| **See user data** | [Section 3: User Analysis](#section-3-user-behavior-analysis--csv-insights) |
-| **Tune gesture detection** | [Section 4: 4-Tier System](#section-4-gesture-detection-system-deep-dive) |
-| **API props reference** | [Section 7: API](#section-7-complete-api-reference) |
-| **Fix a bug** | [Section 12: Troubleshooting](#section-12-troubleshooting-guide) |
+| Need                       | Go To                                                                       |
+| -------------------------- | --------------------------------------------------------------------------- |
+| **Use the component**      | [Section 8: Getting Started](#section-8-getting-started-guide)              |
+| **Understand decisions**   | [Section 2: Timeline](#section-2-timeline--evolution)                       |
+| **See user data**          | [Section 3: User Analysis](#section-3-user-behavior-analysis--csv-insights) |
+| **Tune gesture detection** | [Section 4: 4-Tier System](#section-4-gesture-detection-system-deep-dive)   |
+| **API props reference**    | [Section 7: API](#section-7-complete-api-reference)                         |
+| **Fix a bug**              | [Section 12: Troubleshooting](#section-12-troubleshooting-guide)            |
 
 ---
 
@@ -83,7 +84,7 @@ v0.1.0 ────> v0.1.1 ────> v0.1.2 ────> v0.1.3
   │            │            └──────────────> Single-card downgrade
   │            └───────────────────────────> Velocity alignment fix
   └────────────────────────────────────────> Foundation
-                                             
+
 v0.2.0 ────> v0.3.0 ────> v0.3.1
   │            │            │
   │            │            └─────────────> Polish & stability
@@ -109,22 +110,28 @@ v0.4.0 (Modular) ─────────────────────
 #### Initial Problems
 
 **P1: "Charge Up" Bounce**
+
 - User could drag left while building velocity right
 - Result: Unwanted bounce in opposite direction
 - Fix: Velocity direction alignment check
+
 ```typescript
 // Zero velocity if it opposes drag direction
-if ((dragDirection === 1 && info.velocity.x > 0) || 
-    (dragDirection === -1 && info.velocity.x < 0)) {
+if (
+  (dragDirection === 1 && info.velocity.x > 0) ||
+  (dragDirection === -1 && info.velocity.x < 0)
+) {
   info.velocity.x = 0;
 }
 ```
 
 **P2: Math.floor Creating Layout Gaps**
+
 - Fractional pixels (155.5px) rounded down to 155px
 - Accumulated error: 0.5px × 2 columns = 1px visible gap
 - Especially visible on mobile (375px width)
 - Fix: Remove Math.floor, let browsers handle subpixel rendering
+
 ```typescript
 // BEFORE (created gaps)
 const widthPerItem = Math.floor(totalWidthForCardFaces / columns);
@@ -134,20 +141,22 @@ const widthPerItem = totalWidthForCardFaces / columns;
 ```
 
 **P3: Children Not Filling Containers**
+
 - max-width/max-height only limit, don't force fill
 - Fix: Explicit width/height: 100%
+
 ```typescript
 const filledChild = cloneElement(child, {
   style: {
     ...child.props?.style,
-    width: "100%",      // Added
-    height: "100%",     // Added
+    width: "100%", // Added
+    height: "100%", // Added
     minWidth: "unset",
     minHeight: "unset",
     maxWidth: "100%",
     maxHeight: "100%",
   },
-})
+});
 ```
 
 #### Two-Step Animation System (v0.1.2-v0.1.3)
@@ -155,6 +164,7 @@ const filledChild = cloneElement(child, {
 **Problem:** Long glides would overshoot or undershoot target
 
 **Solution:** Progressive refinement
+
 1. **Soft Glide**: Momentum-based movement (glideStiffness: 150, glideDamping: 38)
 2. **Final Snap**: Aggressive precision snap (stiffness: 800, damping: 60)
 
@@ -172,6 +182,7 @@ const filledChild = cloneElement(child, {
 #### User Testing Methodology
 
 **Dataset:**
+
 - 180 total swipes (90 flicks, 90 glides)
 - 6 users with diverse styles
 - Metrics captured: Distance, Velocity, Duration, Peak Acceleration, Y Movement, Straightness %, and 15+ more
@@ -179,28 +190,33 @@ const filledChild = cloneElement(child, {
 **User Archetypes Identified:**
 
 1. **Felix (Controlled):**
+
    - Flicks: 56 px/s average velocity
    - Glides: 337 px/s average velocity
    - Style: Deliberate, precise movements
    - Distance: Flicks 70px, Glides 134px
 
 2. **Pierre (Energetic):**
+
    - Flicks: 126 px/s average velocity
-   - Glides: 493 px/s average velocity  
+   - Glides: 493 px/s average velocity
    - Style: Fast, forceful gestures
    - Distance: Flicks 125px, Glides 281px
 
 3. **Hani (Inverted):**
+
    - **Unusual pattern:** Fast flicks (165 px/s), Slow glides (107 px/s)
    - Challenges velocity-only detection
    - Demonstrates need for multi-signal approach
 
 4. **Ben (Extreme Variance):**
+
    - Flicks: 144 px/s average, but range 1-2,066 px/s
    - Glides: 940 px/s average with huge outliers
    - Unpredictable style requiring robust thresholds
 
 5. **Max (High-Energy):**
+
    - Consistently fast across both gesture types
    - Peak velocities over 2,400 px/s
 
@@ -211,6 +227,7 @@ const filledChild = cloneElement(child, {
 #### Statistical Analysis Results
 
 **Distance (Strongest Signal):**
+
 - Flicks Median: 100px (Range: 38-289px)
 - Glides Median: 222px (Range: 46-358px)
 - Separation: 122px clear difference
@@ -218,16 +235,19 @@ const filledChild = cloneElement(child, {
 - **Problem:** 26.7% of glides under 160px (short intentional multi-swipes)
 
 **Velocity (High Variance):**
+
 - Flicks Range: 1-2,199 px/s
 - Glides Range: 7-2,521 px/s
 - **Critical Issue:** Old threshold of 120 px/s caught median flick velocity (123 px/s)!
 
 **Duration (Mild Signal):**
+
 - Flicks Median: 73ms
 - Glides Median: 92ms
 - Ratio: Only 1.3x difference (not strong enough alone)
 
 **Peak Acceleration (Supplementary):**
+
 - Higher in glides but with high variance
 - Best used as confirmation factor, not primary signal
 
@@ -236,39 +256,55 @@ const filledChild = cloneElement(child, {
 **Design Philosophy:** Multi-signal consensus prevents false positives
 
 **Tier 1: High Confidence (Distance Primary)**
+
 ```typescript
 if (distance > 145) {
   // Very long swipe = clear glide intent
   const indexJump = Math.max(1, Math.round(velocity / velocityScaler));
-  return { targetIndex: currentIndex + dragDirection * indexJump, isMultiSkip: true };
+  return {
+    targetIndex: currentIndex + dragDirection * indexJump,
+    isMultiSkip: true,
+  };
 }
 ```
+
 - Catches: All Pierre glides, most Felix/Hani/Ben glides
 - False Positive Rate: ~12%
 
 **Tier 2: Medium Confidence (All Signals Agree)**
+
 ```typescript
 if (distance > 88 && velocity > 75 && peakAcceleration > 18) {
   // Requires ALL THREE metrics to indicate glide
   const indexJump = Math.max(1, Math.round(velocity / velocityScaler));
-  return { targetIndex: currentIndex + dragDirection * indexJump, isMultiSkip: true };
+  return {
+    targetIndex: currentIndex + dragDirection * indexJump,
+    isMultiSkip: true,
+  };
 }
 ```
+
 - Prevents false positives through consensus
 - Catches: Short-to-medium glides with clear confirmation
 
 **Tier 3: Energetic Gesture (Strong Single Signal)**
+
 ```typescript
 if (distance > 100 && (velocity > 110 || peakAcceleration > 35)) {
   // Medium distance + EITHER high speed OR burst
   const indexJump = Math.max(1, Math.round(velocity / velocityScaler));
-  return { targetIndex: currentIndex + dragDirection * indexJump, isMultiSkip: true };
+  return {
+    targetIndex: currentIndex + dragDirection * indexJump,
+    isMultiSkip: true,
+  };
 }
 ```
+
 - Catches: Fast, explosive gestures
 - Handles: Energetic users like Pierre
 
 **Tier 4: Default (Single Card or Snap-Back)**
+
 ```typescript
 // Distance check relative to card width
 if (distance > snapThreshold * (itemWidth / 100)) {
@@ -277,6 +313,7 @@ if (distance > snapThreshold * (itemWidth / 100)) {
   return { targetIndex: currentIndex, isMultiSkip: false };
 }
 ```
+
 - Precise single-card navigation
 - Snap-back if gesture too short
 
@@ -287,24 +324,28 @@ if (distance > snapThreshold * (itemWidth / 100)) {
 #### Threshold Evolution (Session 04 Optimization)
 
 **Initial Thresholds (Problematic):**
+
 ```typescript
-GLIDE_DISTANCE_HIGH_CONFIDENCE = 200  // Too permissive
-GLIDE_VELOCITY_MEDIUM = 120           // WAY TOO LOW (median flick = 123!)
-GLIDE_VELOCITY_HIGH = 180             // Still too low
+GLIDE_DISTANCE_HIGH_CONFIDENCE = 200; // Too permissive
+GLIDE_VELOCITY_MEDIUM = 120; // WAY TOO LOW (median flick = 123!)
+GLIDE_VELOCITY_HIGH = 180; // Still too low
 ```
+
 - False Glide Rate: 16.7%
 - Overall Accuracy: 71.7%
 
 **Optimized Thresholds (Data-Driven):**
+
 ```typescript
-GLIDE_DISTANCE_HIGH_CONFIDENCE = 145  // Adjusted down
-GLIDE_DISTANCE_MEDIUM = 88            // More conservative
-GLIDE_VELOCITY_MEDIUM = 75            // Still needs review
-GLIDE_ACCELERATION_MEDIUM = 18        // Validated
-GLIDE_DISTANCE_ENERGETIC = 100        // More selective
-GLIDE_VELOCITY_HIGH = 110             // More selective
-GLIDE_ACCELERATION_HIGH = 35          // Validated
+GLIDE_DISTANCE_HIGH_CONFIDENCE = 145; // Adjusted down
+GLIDE_DISTANCE_MEDIUM = 88; // More conservative
+GLIDE_VELOCITY_MEDIUM = 75; // Still needs review
+GLIDE_ACCELERATION_MEDIUM = 18; // Validated
+GLIDE_DISTANCE_ENERGETIC = 100; // More selective
+GLIDE_VELOCITY_HIGH = 110; // More selective
+GLIDE_ACCELERATION_HIGH = 35; // Validated
 ```
+
 - False Glide Rate: 6.75% (13% improvement!)
 - Overall Accuracy: 93.25%
 
@@ -324,6 +365,7 @@ GLIDE_ACCELERATION_HIGH = 35          // Validated
 **Root Cause:** Spring-based cushioning with initial velocity caused bounce at glide start
 
 **Solution:** Physics simulation approach
+
 - Replaced springs with constant friction
 - Progressive notch resistance (mechanical drag)
 - Velocity-based duration: `duration = baseTime * (targetSpeed / currentVelocity)`
@@ -332,21 +374,25 @@ GLIDE_ACCELERATION_HIGH = 35          // Validated
 #### User Feedback Loop
 
 **Iteration 1:** Real physics
+
 - Result: Eliminated bounce ✅
 - Feedback: "Effect too aggressive"
 
 **Iteration 2:** Subtle click feel
+
 - Reduced pauses to 10-20ms (was 25-50ms)
 - Slowdown per card: 10-15% (was 20-30%)
 - Made overall effect 50% weaker
 - Feedback: "Better but need more control"
 
 **Iteration 3:** Intensity controls added
+
 - Overall Intensity (0-100%): Master multiplier for velocity drops
 - Snap Speed (50-300ms): Final snap duration
 - Feedback: "Need control over last card feel, not just speed"
 
 **Iteration 4:** Granular last card controls
+
 - Last Card Feel: 9 easing options (Linear, Ease Out, Gentle, Smooth, Natural, Moderate, Sharp, Aggressive, Snap)
 - Snap Smoothness (0-100): Controls final snap easing curve
 - Card Click Controls: Pause duration (5-50ms), Sharpness (Gradual/Balanced/Sharp)
@@ -356,23 +402,27 @@ GLIDE_ACCELERATION_HIGH = 35          // Validated
 **Bug:** Cushioning OFF still applied last card effects
 
 **Solution:** Restructured animation logic
+
 ```typescript
 if (enableCushioning) {
   // Card-by-card with pauses and slowdowns (intermediate cards only)
-  for (let i = 1; i <= totalCards; i++) { /* ... */ }
+  for (let i = 1; i <= totalCards; i++) {
+    /* ... */
+  }
 } else {
   // Simple spring glide to near-end
-  await animate(x, nearEndX, { type: "spring", /* ... */ });
+  await animate(x, nearEndX, { type: "spring" /* ... */ });
 }
 
 // ALWAYS apply final snap (regardless of cushioning)
-await animate(x, finalTargetX, { 
+await animate(x, finalTargetX, {
   duration: snapSpeed / 1000,
-  ease: snapEaseCurve 
+  ease: snapEaseCurve,
 });
 ```
 
 **Result:** Clean separation
+
 - Cushioning Toggle → Only affects intermediate cards
 - Last Card Controls → Always visible/functional
 - Snap Controls → Independent of everything
@@ -386,7 +436,7 @@ DRAG RELEASE
     ↓
 Single Card?
     └─→ [Spring Animation] → DONE
-    
+
 Multi-Card (2+)?
     ↓
 Cushioning ON?
@@ -410,6 +460,7 @@ Cushioning ON?
 **Focus:** Production readiness
 
 #### TypeScript Conversion (v1.0.0)
+
 - Migrated entire codebase from JavaScript
 - Added comprehensive type definitions
 - Improved IDE support and type safety
@@ -418,17 +469,23 @@ Cushioning ON?
 #### Jump Cap Implementation (v1.0.1)
 
 **Problem:** Extremely fast swipes could jump 10+ cards
+
 - Disorienting for users
 - Lost context of where they are
 - Difficult to navigate back
 
 **Solution:** Maximum jump limiter
+
 ```typescript
 const maxJump = 3; // Cap maximum jump
-const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelocityScaler)));
+const indexJump = Math.min(
+  maxJump,
+  Math.max(1, Math.round(velocity / actualVelocityScaler))
+);
 ```
 
 **Benefits:**
+
 - Prevents huge leaps (10+ cards)
 - Maintains smooth, controlled navigation
 - Better UX on touch devices
@@ -448,19 +505,20 @@ const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelo
 
 #### Architecture Comparison
 
-| Aspect | Monolithic (v1.1.0) | Modular (v0.4.0) |
-|--------|---------------------|------------------|
-| **Structure** | Single 850+ line file | Separated into hooks + utils |
-| **Lines of Code** | 850+ | ~400 main + ~300 distributed |
-| **Readability** | Requires scrolling | Jump to specific files |
-| **Testing** | Integration-focused | Unit + integration |
-| **Maintenance** | Context-in-place | Distributed context |
-| **Framer Usage** | Easy copy/paste | Requires import setup |
-| **Status** | **Primary version** | Reference implementation |
+| Aspect            | Monolithic (v1.1.0)   | Modular (v0.4.0)             |
+| ----------------- | --------------------- | ---------------------------- |
+| **Structure**     | Single 850+ line file | Separated into hooks + utils |
+| **Lines of Code** | 850+                  | ~400 main + ~300 distributed |
+| **Readability**   | Requires scrolling    | Jump to specific files       |
+| **Testing**       | Integration-focused   | Unit + integration           |
+| **Maintenance**   | Context-in-place      | Distributed context          |
+| **Framer Usage**  | Easy copy/paste       | Requires import setup        |
+| **Status**        | **Primary version**   | Reference implementation     |
 
 #### Why Monolithic is Primary
 
 **Decision Rationale:**
+
 1. **Single Source of Truth:** All logic visible in one place
 2. **Context Preservation:** No jumping between files to understand flow
 3. **Framer Compatibility:** Simpler to copy/paste into projects
@@ -468,6 +526,7 @@ const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelo
 5. **Use Case:** Component used in specific context (Framer), not reusable library
 
 **Trade-offs Accepted:**
+
 - Longer file requires more scrolling
 - Harder to unit test individual functions in isolation
 - Less code reuse across different projects
@@ -475,6 +534,7 @@ const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelo
 #### Modular Version Use Cases
 
 **When v0.4.0 (Modular) Makes Sense:**
+
 - Large team with shared utilities
 - Heavy unit testing requirements
 - Code reuse across multiple projects
@@ -490,6 +550,7 @@ const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelo
 ### PHASE 6: Directional Scroll Lock (Carousel_06)
 
 **Problem:** `touchAction: 'pan-x'` blocked ALL vertical scrolling
+
 - Users got stuck on page
 - Couldn't scroll when finger over carousel
 - Poor mobile UX
@@ -497,6 +558,7 @@ const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelo
 **Solution:** Industry-standard directional lock
 
 **Approach:** Pure angle-based (Instagram/Twitter pattern)
+
 ```typescript
 const angle = Math.abs(Math.atan2(info.offset.y, info.offset.x) * 180 / Math.PI);
 
@@ -505,34 +567,39 @@ else if (angle > 60°) → lock vertical (page scroll)
 ```
 
 **Why This Approach:**
+
 - ⭐⭐⭐⭐⭐ Speed (locks in 5-10ms)
 - ⭐⭐⭐⭐⭐ Simplicity
 - ⭐⭐⭐⭐⭐ Industry proven
 - ⭐⭐⭐⭐ Accuracy on modern devices
 
 **Implementation:**
+
 ```typescript
 // Add state
 const [directionLock, setDirectionLock] = useState(null);
 
 // In handleDrag
 if (directionLock === null) {
-  const angle = Math.abs(Math.atan2(info.offset.y, info.offset.x) * 180 / Math.PI);
-  
+  const angle = Math.abs(
+    (Math.atan2(info.offset.y, info.offset.x) * 180) / Math.PI
+  );
+
   if (angle < 30) {
-    setDirectionLock('horizontal'); // Lock to carousel
+    setDirectionLock("horizontal"); // Lock to carousel
   } else if (angle > 60) {
-    setDirectionLock('vertical'); // Allow page scroll
+    setDirectionLock("vertical"); // Allow page scroll
   }
 }
 
 // Block page scroll only if locked horizontal
-if (directionLock === 'horizontal' && event.cancelable) {
+if (directionLock === "horizontal" && event.cancelable) {
   event.preventDefault();
 }
 ```
 
 **Result:**
+
 - Horizontal swipes control carousel
 - Vertical swipes scroll page
 - Natural, expected mobile behavior
@@ -552,39 +619,41 @@ if (directionLock === 'horizontal' && event.cancelable) {
 
 ### Metrics Captured
 
-| Metric | Description | Unit |
-|--------|-------------|------|
-| **ID** | Sequential swipe number | - |
-| **Type** | User-labeled intent | Flick/Glide |
-| **Timestamp** | ISO 8601 timestamp | DateTime |
-| **Velocity** | Final velocity from Framer Motion | px/s |
-| **Distance** | Total drag distance | px |
-| **Duration** | Gesture duration | ms |
-| **Peak Velocity** | Highest velocity during drag | px/s |
-| **Avg Velocity** | Mean velocity across drag | px/s |
-| **Peak/Avg Ratio** | Velocity spike indicator | Ratio |
-| **Acceleration** | Change in velocity | px/s² |
-| **Avg Jerk** | Average rate of acceleration change | px/s³ |
-| **Max Jerk** | Peak jerk | px/s³ |
-| **Initial Velocity** | Starting velocity | px/s |
-| **Peak Acceleration** | Maximum acceleration | px/s² |
-| **Velocity Variance** | Statistical variance | σ² |
-| **Velocity CV** | Coefficient of variation | - |
-| **Distance/Duration Ratio** | Speed metric | px/ms |
-| **Straightness %** | Horizontal vs total movement | % |
-| **Pause Before Release** | Hesitation indicator | Ratio |
-| **Y Movement** | Vertical drift | px |
+| Metric                      | Description                         | Unit        |
+| --------------------------- | ----------------------------------- | ----------- |
+| **ID**                      | Sequential swipe number             | -           |
+| **Type**                    | User-labeled intent                 | Flick/Glide |
+| **Timestamp**               | ISO 8601 timestamp                  | DateTime    |
+| **Velocity**                | Final velocity from Framer Motion   | px/s        |
+| **Distance**                | Total drag distance                 | px          |
+| **Duration**                | Gesture duration                    | ms          |
+| **Peak Velocity**           | Highest velocity during drag        | px/s        |
+| **Avg Velocity**            | Mean velocity across drag           | px/s        |
+| **Peak/Avg Ratio**          | Velocity spike indicator            | Ratio       |
+| **Acceleration**            | Change in velocity                  | px/s²       |
+| **Avg Jerk**                | Average rate of acceleration change | px/s³       |
+| **Max Jerk**                | Peak jerk                           | px/s³       |
+| **Initial Velocity**        | Starting velocity                   | px/s        |
+| **Peak Acceleration**       | Maximum acceleration                | px/s²       |
+| **Velocity Variance**       | Statistical variance                | σ²          |
+| **Velocity CV**             | Coefficient of variation            | -           |
+| **Distance/Duration Ratio** | Speed metric                        | px/ms       |
+| **Straightness %**          | Horizontal vs total movement        | %           |
+| **Pause Before Release**    | Hesitation indicator                | Ratio       |
+| **Y Movement**              | Vertical drift                      | px          |
 
 ### Per-User Statistical Analysis
 
 #### Felix (Controlled Swiper)
 
 **Characteristics:**
+
 - Most consistent user (lowest variance)
 - Clear separation between flick and glide
 - Methodical, deliberate movements
 
 **Flick Profile:**
+
 ```
 Median Velocity:    56 px/s
 Median Distance:    70 px
@@ -594,6 +663,7 @@ Straightness:       ~85%
 ```
 
 **Glide Profile:**
+
 ```
 Median Velocity:    337 px/s (6x higher!)
 Median Distance:    134 px
@@ -607,11 +677,13 @@ Straightness:       ~90%
 #### Pierre (Energetic Swiper)
 
 **Characteristics:**
+
 - High velocity across both gestures
 - Long distances for both types
 - Fast, forceful movements
 
 **Flick Profile:**
+
 ```
 Median Velocity:    126 px/s
 Median Distance:    125 px
@@ -621,6 +693,7 @@ Straightness:       ~93%
 ```
 
 **Glide Profile:**
+
 ```
 Median Velocity:    493 px/s
 Median Distance:    281 px
@@ -634,11 +707,13 @@ Straightness:       ~92%
 #### Hani (Inverted Pattern)
 
 **Characteristics:**
+
 - **UNUSUAL:** Fast flicks, slower glides
 - Challenges velocity-only detection
 - High variance within each gesture type
 
 **Flick Profile:**
+
 ```
 Median Velocity:    165 px/s (FAST for flicks!)
 Median Distance:    57 px
@@ -648,6 +723,7 @@ Straightness:       ~72%
 ```
 
 **Glide Profile:**
+
 ```
 Median Velocity:    107 px/s (SLOW for glides!)
 Median Distance:    136 px
@@ -661,11 +737,13 @@ Straightness:       ~87%
 #### Ben (Extreme Variance)
 
 **Characteristics:**
+
 - Highest variance user
 - Unpredictable velocity ranges
 - Some outliers with 1000+ px/s flicks
 
 **Flick Profile:**
+
 ```
 Median Velocity:    144 px/s
 Range:              1-2,066 px/s (HUGE!)
@@ -675,6 +753,7 @@ Straightness:       ~80%
 ```
 
 **Glide Profile:**
+
 ```
 Median Velocity:    940 px/s
 Range:              7-1,783 px/s
@@ -688,11 +767,13 @@ Straightness:       ~80%
 #### Max (High-Energy)
 
 **Characteristics:**
+
 - Consistently fast gestures
 - Peak velocities exceed 2,400 px/s
 - Very high peak accelerations
 
 **Flick Profile:**
+
 ```
 Median Velocity:    230 px/s
 Median Distance:    243 px (LONG flicks!)
@@ -701,6 +782,7 @@ Straightness:       ~82%
 ```
 
 **Glide Profile:**
+
 ```
 Median Velocity:    1,616 px/s
 Median Distance:    253 px
@@ -714,11 +796,13 @@ Straightness:       ~82%
 #### Caitlin (Balanced)
 
 **Characteristics:**
+
 - Added for validation
 - Moderate style between extremes
 - Good representative of "average" user
 
 **Flick Profile:**
+
 ```
 Median Velocity:    99 px/s
 Median Distance:    102 px
@@ -727,6 +811,7 @@ Straightness:       ~79%
 ```
 
 **Glide Profile:**
+
 ```
 Median Velocity:    208 px/s
 Median Distance:    254 px
@@ -787,11 +872,13 @@ OBSERVATION: Distance more universal than velocity
 **Overlap Zones:**
 
 1. **Long Flicks (16.7% of flicks > 200px)**
+
    - Users making deliberate single-card swipes
    - Same distance as short glides
    - Intent differs but metrics identical
 
 2. **Short Glides (26.7% of glides < 160px)**
+
    - Users intending multi-card jump
    - Short, quick bursts
    - Same distance as long flicks
@@ -816,6 +903,7 @@ OBSERVATION: Distance more universal than velocity
 ### Unused Metrics Analysis
 
 **Metrics NOT currently used but available:**
+
 - Avg Jerk / Max Jerk
 - Velocity Coefficient of Variation
 - Straightness %
@@ -823,11 +911,13 @@ OBSERVATION: Distance more universal than velocity
 - Y Movement
 
 **Why not used:**
+
 - Current system achieves 93.25% with simpler approach
 - Additional metrics add complexity without proportional gain
 - Could be valuable for ML approach (Random Forest, Neural Net)
 
 **Future Optimization Potential:**
+
 - Machine Learning could reach 85-90% accuracy using all metrics
 - Per-user calibration could hit 95%+
 - Context awareness (previous gesture, animation state) could help edge cases
@@ -841,15 +931,17 @@ OBSERVATION: Distance more universal than velocity
 **Philosophy:** Multi-signal consensus prevents false positives while catching legitimate glides
 
 **Input Signals:**
+
 1. Distance (strongest, most universal)
 2. Velocity (variable, needs confirmation)
 3. Peak Acceleration (supplementary tiebreaker)
 
 **Output:**
+
 ```typescript
 interface GestureDetectionResult {
-  targetIndex: number;    // Calculated destination card
-  isMultiSkip: boolean;  // Use multi-card animation physics
+  targetIndex: number; // Calculated destination card
+  isMultiSkip: boolean; // Use multi-card animation physics
 }
 ```
 
@@ -886,6 +978,7 @@ Tier 4: Default single-card logic
 **Threshold:** `GLIDE_DISTANCE_HIGH_CONFIDENCE = 145px`
 
 **Logic:**
+
 ```typescript
 if (distance > 145) {
   const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler));
@@ -895,12 +988,14 @@ if (distance > 145) {
 ```
 
 **Rationale:**
+
 - 145px is universally recognized as "long" across all users
 - Catches: ~55% of glides
 - False positive rate: ~12% (acceptable)
 - Even slow glides at this distance are intentional
 
 **Coverage:**
+
 - ✅ All Pierre glides (long, forceful)
 - ✅ Most Felix glides (consistent length)
 - ✅ Most Hani glides (despite low velocity)
@@ -908,6 +1003,7 @@ if (distance > 145) {
 - ⚠️ Misses: Short intentional glides (26.7%)
 
 **Why 145px specifically:**
+
 - Median glide distance: 222px
 - Median flick distance: 100px
 - 145px is conservative midpoint
@@ -916,6 +1012,7 @@ if (distance > 145) {
 ### Tier 2: Medium Confidence (All Signals Agree)
 
 **Thresholds:**
+
 ```typescript
 GLIDE_DISTANCE_MEDIUM = 88px
 GLIDE_VELOCITY_MEDIUM = 75px/s
@@ -923,6 +1020,7 @@ GLIDE_ACCELERATION_MEDIUM = 18
 ```
 
 **Logic:**
+
 ```typescript
 if (distance > 88 && velocity > 75 && peakAcceleration > 18) {
   const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler));
@@ -932,23 +1030,27 @@ if (distance > 88 && velocity > 75 && peakAcceleration > 18) {
 ```
 
 **Rationale:**
+
 - **Conservative approach:** ALL THREE metrics must agree
 - Prevents false positives from ambiguous cases
 - Catches: Additional 5-10% of glides missed by Tier 1
 
 **Why ALL THREE required:**
+
 - Distance alone: Could be long deliberate flick
 - Velocity alone: Could be fast short flick
 - Acceleration alone: Could be quick tap
 - Together: High confidence of intent
 
 **Coverage:**
+
 - ✅ Medium-length glides with clear momentum
 - ✅ Balanced users like Caitlin
 - ⚠️ Misses: Low-velocity glides (like Hani's style)
 - ⚠️ Misses: High-variance users with outliers
 
 **Historical Note:**
+
 - Original `GLIDE_VELOCITY_MEDIUM = 120` was TOO LOW
 - Median flick velocity was 123px/s!
 - Caused 16.7% false positive rate
@@ -957,6 +1059,7 @@ if (distance > 88 && velocity > 75 && peakAcceleration > 18) {
 ### Tier 3: Energetic Gesture (Strong Signal OR Burst)
 
 **Thresholds:**
+
 ```typescript
 GLIDE_DISTANCE_ENERGETIC = 100px
 GLIDE_VELOCITY_HIGH = 110px/s
@@ -964,6 +1067,7 @@ GLIDE_ACCELERATION_HIGH = 35
 ```
 
 **Logic:**
+
 ```typescript
 if (distance > 100 && (velocity > 110 || peakAcceleration > 35)) {
   const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler));
@@ -973,16 +1077,19 @@ if (distance > 100 && (velocity > 110 || peakAcceleration > 35)) {
 ```
 
 **Rationale:**
+
 - Medium distance + EITHER high speed OR explosive burst
 - Catches: Fast, forceful gestures from energetic users
 - Handles: Pierre and Max styles
 
 **Why OR instead of AND:**
+
 - Some users have explosive burst (high acceleration) but medium final velocity
 - Some users have smooth fast swipe (high velocity) but lower acceleration
 - Either signal at this distance indicates intentional glide
 
 **Coverage:**
+
 - ✅ Pierre's energetic style
 - ✅ Max's high-energy gestures
 - ✅ Ben's outlier fast flicks that should be glides
@@ -993,6 +1100,7 @@ if (distance > 100 && (velocity > 110 || peakAcceleration > 35)) {
 **Threshold:** `snapThreshold` (default: 10% of card width)
 
 **Logic:**
+
 ```typescript
 // Calculate threshold in pixels
 const thresholdDistance = snapThreshold * (itemWidth / 100);
@@ -1009,16 +1117,19 @@ if (distance > thresholdDistance) {
 ```
 
 **Rationale:**
+
 - Precise single-card navigation
 - Prevents accidental advances from tiny drags
 - User-adjustable sensitivity via `snapThreshold` prop
 
 **Use Cases:**
+
 - Short deliberate swipes for precise navigation
 - Corrective gestures (user changes mind mid-drag)
 - Tiny accidental touches
 
 **Snap-Back Behavior:**
+
 - If drag < threshold, return to current position
 - Smooth spring animation back
 - No index change
@@ -1029,6 +1140,7 @@ if (distance > thresholdDistance) {
 **User-Facing Prop:** `velocityScalerPercentage` (1-100%)
 
 **Internal Calculation:**
+
 ```typescript
 const actualVelocityScaler = 200 + (velocityScalerPercentage / 100) * 1000;
 
@@ -1040,6 +1152,7 @@ const actualVelocityScaler = 200 + (velocityScalerPercentage / 100) * 1000;
 ```
 
 **How It Affects Jump Distance:**
+
 ```typescript
 const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler));
 
@@ -1052,6 +1165,7 @@ const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler));
 ```
 
 **Intuition:**
+
 - Lower percentage = higher sensitivity = longer jumps
 - Higher percentage = lower sensitivity = shorter jumps
 - 20% is balanced default
@@ -1059,6 +1173,7 @@ const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler));
 ### Peak Acceleration Tracking
 
 **Implementation:**
+
 ```typescript
 // Velocity history tracked during drag
 const velocityHistory = useRef<number[]>([]);
@@ -1081,11 +1196,13 @@ if (velocityHistory.current.length >= 2) {
 ```
 
 **Why Track Peak (Not Average):**
+
 - Peak captures explosive burst at start
 - Average diluted by slow-down at end
 - Burst indicates intentional force = likely glide
 
 **Real Example (from Ben's data):**
+
 ```
 Swipe ID: 1
 Velocity: 966 px/s
@@ -1096,55 +1213,71 @@ Result: Glide detected (high acceleration burst)
 ### Edge Cases Handled
 
 **Case 1: Direction Reversal**
+
 ```typescript
 // Zero velocity if it opposes drag direction
-if ((dragDirection === 1 && info.velocity.x > 0) || 
-    (dragDirection === -1 && info.velocity.x < 0)) {
+if (
+  (dragDirection === 1 && info.velocity.x > 0) ||
+  (dragDirection === -1 && info.velocity.x < 0)
+) {
   info.velocity.x = 0;
 }
 ```
+
 - Prevents "charge up" bounce
 - User drags left while building velocity right
 - Fixed in v0.1.1
 
 **Case 2: Jump Cap**
+
 ```typescript
 const maxJump = 3;
-const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelocityScaler)));
+const indexJump = Math.min(
+  maxJump,
+  Math.max(1, Math.round(velocity / actualVelocityScaler))
+);
 ```
+
 - Prevents 10+ card jumps on extreme velocity
 - Maintains user orientation
 - Added in v1.0.1
 
 **Case 3: Boundary Checking**
+
 ```typescript
 targetIndex = Math.max(0, Math.min(maxIndex, targetIndex));
 ```
+
 - Clamp to valid range
 - Prevents negative index
 - Prevents exceeding total items
 
 **Case 4: Zero/Negative Distance**
+
 ```typescript
 const distance = Math.abs(dragOffset);
 ```
+
 - Always work with positive distance
 - Direction handled separately via dragDirection
 
 ### Performance Considerations
 
 **Velocity History:**
+
 - Stored in ref (no re-renders)
 - Cleared on drag start
 - Minimal memory footprint (typically < 20 entries)
 
 **Calculations:**
+
 - All threshold checks are simple comparisons (O(1))
 - Peak acceleration loop is O(n) but n is small (<20)
 - No expensive operations during drag
 - Final calculation only on drag end
 
 **Optimization:**
+
 ```typescript
 // Use ref for state that doesn't need re-render
 const velocityHistory = useRef<number[]>([]);
@@ -1155,24 +1288,27 @@ const isAnimating = useRef<boolean>(false);
 ### Debugging & Tuning
 
 **Debug Mode (can be added):**
+
 ```typescript
 if (DEBUG_MODE) {
   console.log({
     distance,
     velocity,
     peakAcceleration,
-    tier: result.isMultiSkip ? 'Multi-card glide' : 'Single-card',
-    targetIndex: result.targetIndex
+    tier: result.isMultiSkip ? "Multi-card glide" : "Single-card",
+    targetIndex: result.targetIndex,
   });
 }
 ```
 
 **Visual Feedback for Testing:**
+
 - Temporary overlay showing detected gesture type
 - Display metrics during drag
 - Color-code threshold violations
 
 **Tuning Strategy:**
+
 1. Collect diagnostic CSVs from target users
 2. Analyze false positive/negative patterns
 3. Adjust thresholds incrementally (+/- 5-10)
@@ -1192,17 +1328,21 @@ if (DEBUG_MODE) {
 #### Why Monolithic?
 
 **Decision Context (from Carousel_07):**
+
 1. **Single Source of Truth**
+
    - All logic visible in one place
    - No jumping between files to understand flow
    - Easier to reason about state interactions
 
 2. **Framer Compatibility**
+
    - Copy/paste entire component
    - No import path setup needed
    - Works immediately in Framer projects
 
 3. **Team Size**
+
    - Solo developer / small team
    - Context-in-place preferred over separation
    - Less overhead than distributed architecture
@@ -1213,6 +1353,7 @@ if (DEBUG_MODE) {
    - Not shared across multiple projects
 
 **Trade-offs Accepted:**
+
 - Longer file requires scrolling
 - Harder to unit test individual functions
 - Less code reuse potential
@@ -1225,27 +1366,33 @@ if (DEBUG_MODE) {
 // ============================================
 // IMPORTS (Lines 1-15)
 // ============================================
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
-import { motion, useMotionValue, animate } from 'framer-motion'
-import { addPropertyControls, ControlType } from 'framer'
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
+import { motion, useMotionValue, animate } from "framer-motion";
+import { addPropertyControls, ControlType } from "framer";
 // Lucide icons for arrows
 
 // ============================================
 // CONSTANTS (Lines 16-40)
 // ============================================
 // Gesture detection thresholds
-const GLIDE_DISTANCE_HIGH_CONFIDENCE = 145
-const GLIDE_DISTANCE_MEDIUM = 88
-const GLIDE_VELOCITY_MEDIUM = 75
+const GLIDE_DISTANCE_HIGH_CONFIDENCE = 145;
+const GLIDE_DISTANCE_MEDIUM = 88;
+const GLIDE_VELOCITY_MEDIUM = 75;
 // ... etc
 
 // ============================================
 // TYPES (Lines 41-100)
 // ============================================
 interface AdaptiveCarouselProps {
-  children: React.ReactNode
-  columns?: number
-  gap?: number
+  children: React.ReactNode;
+  columns?: number;
+  gap?: number;
   // ... 30+ props
 }
 
@@ -1253,79 +1400,104 @@ interface AdaptiveCarouselProps {
 // MAIN COMPONENT (Lines 101-750)
 // ============================================
 export default function AdaptiveCarousel(props: AdaptiveCarouselProps) {
-  
   // --- STATE & REFS (Lines 110-140) ---
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [containerWidth, setContainerWidth] = useState(0)
-  const x = useMotionValue(0)
-  const velocityHistory = useRef<number[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const x = useMotionValue(0);
+  const velocityHistory = useRef<number[]>([]);
   // ... more state
-  
+
   // --- DERIVED VALUES (Lines 141-180) ---
-  const totalItems = Children.count(children)
-  const maxIndex = Math.max(0, totalItems - columns)
+  const totalItems = Children.count(children);
+  const maxIndex = Math.max(0, totalItems - columns);
   const itemWidth = useMemo(() => {
     // Complex calculation...
-  }, [containerWidth, columns, gap, horizontalPadding, peakAmount])
-  
+  }, [containerWidth, columns, gap, horizontalPadding, peakAmount]);
+
   // --- DIMENSION TRACKING (Lines 181-210) ---
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth)
+        setContainerWidth(containerRef.current.offsetWidth);
       }
-    }
+    };
     // Resize listener with debouncing
-  }, [])
-  
+  }, []);
+
   // --- NAVIGATION LOGIC (Lines 211-340) ---
-  const goToIndex = useCallback(async (
-    targetIndex: number,
-    velocity?: number,
-    isMultiSkip?: boolean
-  ) => {
-    // Two-step animation system
-    // Soft glide → Final snap
-  }, [/* deps */])
-  
-  const navigate = useCallback((direction: number) => {
-    goToIndex(currentIndex + direction)
-  }, [currentIndex, goToIndex])
-  
+  const goToIndex = useCallback(
+    async (targetIndex: number, velocity?: number, isMultiSkip?: boolean) => {
+      // Two-step animation system
+      // Soft glide → Final snap
+    },
+    [
+      /* deps */
+    ]
+  );
+
+  const navigate = useCallback(
+    (direction: number) => {
+      goToIndex(currentIndex + direction);
+    },
+    [currentIndex, goToIndex]
+  );
+
   // --- GESTURE HANDLERS (Lines 341-480) ---
   const handleDragStart = useCallback(() => {
-    x.stop()
-    velocityHistory.current = []
+    x.stop();
+    velocityHistory.current = [];
     // ...
-  }, [x])
-  
+  }, [x]);
+
   const handleDrag = useCallback((event: any, info: PanInfo) => {
-    velocityHistory.current.push(Math.abs(info.velocity.x))
-  }, [])
-  
-  const handleDragEnd = useCallback((event: any, info: PanInfo) => {
-    // 4-tier gesture detection
-    // Calculate distance, velocity, peak acceleration
-    // Determine target index and animation type
-    goToIndex(targetIndex, velocity, isMultiSkip)
-  }, [/* deps */])
-  
+    velocityHistory.current.push(Math.abs(info.velocity.x));
+  }, []);
+
+  const handleDragEnd = useCallback(
+    (event: any, info: PanInfo) => {
+      // 4-tier gesture detection
+      // Calculate distance, velocity, peak acceleration
+      // Determine target index and animation type
+      goToIndex(targetIndex, velocity, isMultiSkip);
+    },
+    [
+      /* deps */
+    ]
+  );
+
   // --- KEYBOARD NAVIGATION (Lines 481-550) ---
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    switch (event.key) {
-      case 'ArrowLeft': navigate(-1); break
-      case 'ArrowRight': navigate(1); break
-      case 'Home': goToIndex(0); break
-      case 'End': goToIndex(maxIndex); break
-    }
-  }, [navigate, goToIndex, maxIndex])
-  
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      switch (event.key) {
+        case "ArrowLeft":
+          navigate(-1);
+          break;
+        case "ArrowRight":
+          navigate(1);
+          break;
+        case "Home":
+          goToIndex(0);
+          break;
+        case "End":
+          goToIndex(maxIndex);
+          break;
+      }
+    },
+    [navigate, goToIndex, maxIndex]
+  );
+
   // --- RENDER (Lines 551-750) ---
   return (
-    <div style={{ /* container styles */ }}>
+    <div
+      style={
+        {
+          /* container styles */
+        }
+      }
+    >
       {/* Arrow Navigation */}
       {arrowsEnabled && <ArrowButtons />}
-      
+
       {/* Carousel Track */}
       <motion.div
         drag="x"
@@ -1341,47 +1513,52 @@ export default function AdaptiveCarousel(props: AdaptiveCarouselProps) {
           </div>
         ))}
       </motion.div>
-      
+
       {/* Dots Navigation */}
       {dotsEnabled && <DotNavigation />}
     </div>
-  )
+  );
 }
 
 // ============================================
 // PROPERTY CONTROLS (Lines 751-850)
 // ============================================
 addPropertyControls(AdaptiveCarousel, {
-  children: { type: ControlType.Array, /* ... */ },
-  columns: { type: ControlType.Number, min: 1, max: 6, /* ... */ },
+  children: { type: ControlType.Array /* ... */ },
+  columns: { type: ControlType.Number, min: 1, max: 6 /* ... */ },
   // ... 30+ prop controls
-})
+});
 ```
 
 #### Key Sections Explained
 
 **1. State Management**
+
 - Uses hooks (useState, useRef, useEffect)
 - Minimal re-renders (refs for non-render state)
 - Motion value (x) managed by Framer Motion
 
 **2. Dimension Tracking**
+
 - ResizeObserver or window resize listener
 - Debounced to prevent performance issues
 - Recalculates item width on container change
 
 **3. Navigation System**
+
 - `goToIndex()`: Core navigation function
 - Two-step animation for multi-card
 - Single-step for single-card
 - Async/await for animation sequencing
 
 **4. Gesture Detection**
+
 - Inline 4-tier system
 - Velocity history tracking in ref
 - Peak acceleration calculation on drag end
 
 **5. Accessibility**
+
 - Keyboard event handlers
 - ARIA labels and roles
 - Focus management
@@ -1415,6 +1592,7 @@ addPropertyControls(AdaptiveCarousel, {
 #### Hook Responsibilities
 
 **useCarouselDimensions:**
+
 ```typescript
 export function useCarouselDimensions(
   columns: number,
@@ -1422,9 +1600,9 @@ export function useCarouselDimensions(
   horizontalPadding: number,
   peakAmount: number
 ) {
-  const [containerWidth, setContainerWidth] = useState(0)
-  const containerRef = useRef<HTMLDivElement>(null)
-  
+  const [containerWidth, setContainerWidth] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // Calculate item width
   const itemWidth = useMemo(() => {
     return calculateItemWidth({
@@ -1432,20 +1610,21 @@ export function useCarouselDimensions(
       columns,
       gap,
       horizontalPadding,
-      peakAmount
-    })
-  }, [containerWidth, columns, gap, horizontalPadding, peakAmount])
-  
+      peakAmount,
+    });
+  }, [containerWidth, columns, gap, horizontalPadding, peakAmount]);
+
   // Resize observer
   useEffect(() => {
     // Dimension tracking logic
-  }, [])
-  
-  return { itemWidth, containerWidth, containerRef }
+  }, []);
+
+  return { itemWidth, containerWidth, containerRef };
 }
 ```
 
 **useCarouselNavigation:**
+
 ```typescript
 export function useCarouselNavigation(
   itemWidth: number,
@@ -1453,29 +1632,34 @@ export function useCarouselNavigation(
   maxIndex: number,
   animationConfig: AnimationConfig
 ) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const x = useMotionValue(0)
-  const isAnimating = useRef(false)
-  
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const x = useMotionValue(0);
+  const isAnimating = useRef(false);
+
   // Navigate to specific index
-  const goToIndex = useCallback(async (
-    targetIndex: number,
-    velocity?: number,
-    isMultiSkip?: boolean
-  ) => {
-    // Two-step animation logic
-  }, [/* deps */])
-  
+  const goToIndex = useCallback(
+    async (targetIndex: number, velocity?: number, isMultiSkip?: boolean) => {
+      // Two-step animation logic
+    },
+    [
+      /* deps */
+    ]
+  );
+
   // Navigate by direction
-  const navigate = useCallback((direction: number) => {
-    goToIndex(currentIndex + direction)
-  }, [currentIndex, goToIndex])
-  
-  return { currentIndex, x, goToIndex, navigate }
+  const navigate = useCallback(
+    (direction: number) => {
+      goToIndex(currentIndex + direction);
+    },
+    [currentIndex, goToIndex]
+  );
+
+  return { currentIndex, x, goToIndex, navigate };
 }
 ```
 
 **useCarouselGestures:**
+
 ```typescript
 export function useCarouselGestures(
   currentIndex: number,
@@ -1484,29 +1668,35 @@ export function useCarouselGestures(
   actualVelocityScaler: number,
   goToIndex: (index: number, velocity: number, isMultiSkip: boolean) => void
 ) {
-  const velocityHistory = useRef<number[]>([])
-  const dragStartTime = useRef(0)
-  
+  const velocityHistory = useRef<number[]>([]);
+  const dragStartTime = useRef(0);
+
   const handleDragStart = useCallback(() => {
-    velocityHistory.current = []
-    dragStartTime.current = Date.now()
-  }, [])
-  
+    velocityHistory.current = [];
+    dragStartTime.current = Date.now();
+  }, []);
+
   const handleDrag = useCallback((event: any, info: PanInfo) => {
-    velocityHistory.current.push(Math.abs(info.velocity.x))
-  }, [])
-  
-  const handleDragEnd = useCallback((event: any, info: PanInfo) => {
-    // 4-tier gesture detection
-    const result = detectGesture(/* params */)
-    goToIndex(result.targetIndex, velocity, result.isMultiSkip)
-  }, [/* deps */])
-  
-  return { handleDragStart, handleDrag, handleDragEnd }
+    velocityHistory.current.push(Math.abs(info.velocity.x));
+  }, []);
+
+  const handleDragEnd = useCallback(
+    (event: any, info: PanInfo) => {
+      // 4-tier gesture detection
+      const result = detectGesture(/* params */);
+      goToIndex(result.targetIndex, velocity, result.isMultiSkip);
+    },
+    [
+      /* deps */
+    ]
+  );
+
+  return { handleDragStart, handleDrag, handleDragEnd };
 }
 ```
 
 **useCarouselKeyboard:**
+
 ```typescript
 export function useCarouselKeyboard(
   currentIndex: number,
@@ -1514,36 +1704,54 @@ export function useCarouselKeyboard(
   goToIndex: (index: number) => void,
   navigate: (direction: number) => void
 ) {
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    switch (event.key) {
-      case 'ArrowLeft': navigate(-1); break
-      case 'ArrowRight': navigate(1); break
-      case 'Home': goToIndex(0); break
-      case 'End': goToIndex(maxIndex); break
-    }
-  }, [navigate, goToIndex, maxIndex])
-  
-  const handleArrowKeyDown = useCallback((event: React.KeyboardEvent, direction: number) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      navigate(direction)
-    }
-  }, [navigate])
-  
-  const handleDotKeyDown = useCallback((event: React.KeyboardEvent, index: number) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      goToIndex(index)
-    }
-  }, [goToIndex])
-  
-  return { handleKeyDown, handleArrowKeyDown, handleDotKeyDown }
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      switch (event.key) {
+        case "ArrowLeft":
+          navigate(-1);
+          break;
+        case "ArrowRight":
+          navigate(1);
+          break;
+        case "Home":
+          goToIndex(0);
+          break;
+        case "End":
+          goToIndex(maxIndex);
+          break;
+      }
+    },
+    [navigate, goToIndex, maxIndex]
+  );
+
+  const handleArrowKeyDown = useCallback(
+    (event: React.KeyboardEvent, direction: number) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        navigate(direction);
+      }
+    },
+    [navigate]
+  );
+
+  const handleDotKeyDown = useCallback(
+    (event: React.KeyboardEvent, index: number) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        goToIndex(index);
+      }
+    },
+    [goToIndex]
+  );
+
+  return { handleKeyDown, handleArrowKeyDown, handleDotKeyDown };
 }
 ```
 
 #### Utility Functions
 
 **gestureDetection.ts:**
+
 ```typescript
 export const GESTURE_CONSTANTS = {
   GLIDE_DISTANCE_HIGH_CONFIDENCE: 145,
@@ -1553,7 +1761,7 @@ export const GESTURE_CONSTANTS = {
   GLIDE_DISTANCE_ENERGETIC: 100,
   GLIDE_VELOCITY_HIGH: 110,
   GLIDE_ACCELERATION_HIGH: 35,
-} as const
+} as const;
 
 export function detectGesture(
   distance: number,
@@ -1571,6 +1779,7 @@ export function detectGesture(
 ```
 
 **animationConfig.ts:**
+
 ```typescript
 export function getAnimationSettings(
   isMultiSkip: boolean,
@@ -1578,25 +1787,28 @@ export function getAnimationSettings(
 ) {
   return isMultiSkip
     ? { stiffness: config.glideStiffness, damping: config.glideDamping }
-    : { stiffness: config.flickStiffness, damping: config.flickDamping }
+    : { stiffness: config.flickStiffness, damping: config.flickDamping };
 }
 
 export function getFinalSnapSettings() {
   return {
     stiffness: 1000,
     damping: 80,
-    velocity: 0
-  }
+    velocity: 0,
+  };
 }
 ```
 
 **layoutCalculations.ts:**
+
 ```typescript
 export function calculateItemWidth(params: LayoutParams): number {
-  const { containerWidth, columns, gap, horizontalPadding, peakAmount } = params
-  const availableWidth = containerWidth - (horizontalPadding * 2) - (peakAmount * 2)
-  const totalGaps = (columns - 1) * gap
-  return (availableWidth - totalGaps) / columns
+  const { containerWidth, columns, gap, horizontalPadding, peakAmount } =
+    params;
+  const availableWidth =
+    containerWidth - horizontalPadding * 2 - peakAmount * 2;
+  const totalGaps = (columns - 1) * gap;
+  return (availableWidth - totalGaps) / columns;
 }
 
 export function calculateDragConstraints(/* params */): DragConstraints {
@@ -1610,22 +1822,23 @@ export function calculateFinalItemWidth(/* params */): number {
 
 #### Comparison: Monolithic vs Modular
 
-| Aspect | Monolithic (v1.1.0) | Modular (v0.4.0) |
-|--------|---------------------|------------------|
-| **Total Lines** | ~850 in one file | ~400 main + ~300 distributed |
-| **Files** | 1 | 10+ |
-| **Imports Needed** | All in one place | Need to wire up hooks |
-| **Context** | Visible all at once | Distributed across files |
-| **Testing** | Integration tests | Unit + integration |
-| **Reusability** | Copy entire file | Import specific hooks |
-| **Learning Curve** | Scroll to understand | Navigate files |
-| **Maintenance** | All changes in one file | Changes distributed |
-| **Framer Usage** | Copy/paste ready | Requires setup |
-| **Production Status** | **Primary** | Reference |
+| Aspect                | Monolithic (v1.1.0)     | Modular (v0.4.0)             |
+| --------------------- | ----------------------- | ---------------------------- |
+| **Total Lines**       | ~850 in one file        | ~400 main + ~300 distributed |
+| **Files**             | 1                       | 10+                          |
+| **Imports Needed**    | All in one place        | Need to wire up hooks        |
+| **Context**           | Visible all at once     | Distributed across files     |
+| **Testing**           | Integration tests       | Unit + integration           |
+| **Reusability**       | Copy entire file        | Import specific hooks        |
+| **Learning Curve**    | Scroll to understand    | Navigate files               |
+| **Maintenance**       | All changes in one file | Changes distributed          |
+| **Framer Usage**      | Copy/paste ready        | Requires setup               |
+| **Production Status** | **Primary**             | Reference                    |
 
 #### When to Use Which
 
 **Use Monolithic (v1.1.0) when:**
+
 - ✅ Solo developer or small team
 - ✅ Building for Framer specifically
 - ✅ Want all logic in one place
@@ -1634,6 +1847,7 @@ export function calculateFinalItemWidth(/* params */): number {
 - ✅ **This is the default choice**
 
 **Use Modular (v0.4.0) when:**
+
 - ✅ Large team with shared utilities
 - ✅ Heavy unit testing requirements
 - ✅ Building custom carousel variations
@@ -1650,6 +1864,7 @@ export function calculateFinalItemWidth(/* params */): number {
 **Goal:** Natural, physics-based feel that responds to user input
 
 **Approach:** Two-step system for multi-card glides
+
 1. Soft glide with momentum (feels responsive)
 2. Crisp final snap (ensures precision)
 
@@ -1662,6 +1877,7 @@ export function calculateFinalItemWidth(/* params */): number {
 **Trigger:** Tier 4 detection (short distance)
 
 **Physics:**
+
 ```typescript
 {
   type: "spring",
@@ -1672,12 +1888,14 @@ export function calculateFinalItemWidth(/* params */): number {
 ```
 
 **Characteristics:**
+
 - Quick, responsive
 - Follows thumb velocity
 - Stops precisely on target
 - No overshoot
 
 **Default Settings:**
+
 - `flickStiffness: 500` (snappy)
 - `flickDamping: 55` (minimal bounce)
 
@@ -1688,6 +1906,7 @@ export function calculateFinalItemWidth(/* params */): number {
 **Trigger:** Tier 1-3 detection (long distance, multi-card intent)
 
 **Step 1: Soft Glide**
+
 ```typescript
 {
   type: "spring",
@@ -1698,6 +1917,7 @@ export function calculateFinalItemWidth(/* params */): number {
 ```
 
 **Step 2: Final Snap**
+
 ```typescript
 {
   stiffness: 1000,  // Aggressive
@@ -1707,15 +1927,18 @@ export function calculateFinalItemWidth(/* params */): number {
 ```
 
 **Characteristics:**
+
 - Step 1: Momentum-based travel, feels natural
 - Step 2: Precision landing, no overshoot
 - Total duration: ~500-800ms depending on distance
 
 **Default Settings:**
+
 - `glideStiffness: 120` (gentle momentum)
 - `glideDamping: 25` (light damping for glide feel)
 
 **Why Two Steps:**
+
 - Pure spring to final position: Can overshoot/undershoot
 - Pure tween: Feels unnatural, ignores velocity
 - Two-step: Best of both worlds
@@ -1725,6 +1948,7 @@ export function calculateFinalItemWidth(/* params */): number {
 **Trigger:** Drag distance below snapThreshold
 
 **Physics:**
+
 ```typescript
 {
   type: "spring",
@@ -1735,6 +1959,7 @@ export function calculateFinalItemWidth(/* params */): number {
 ```
 
 **Characteristics:**
+
 - Quick return to original position
 - No velocity (starts from rest)
 - Visual feedback that gesture was too short
@@ -1742,18 +1967,21 @@ export function calculateFinalItemWidth(/* params */): number {
 ### Animation Timing
 
 **Single-Card Flick:**
+
 ```
 User releases → Spring animation → Settled
      0ms              150-250ms         Done
 ```
 
 **Multi-Card Glide:**
+
 ```
 User releases → Soft glide → Final snap → Settled
      0ms         300-500ms      100-200ms    Done
 ```
 
 **Total Duration:**
+
 - Single card: 150-250ms
 - Multi-card (2-3 cards): 400-700ms
 - Multi-card (capped at 3): 600-800ms
@@ -1761,6 +1989,7 @@ User releases → Soft glide → Final snap → Settled
 ### Spring Physics Explained
 
 **Stiffness:**
+
 - How aggressively animation reaches target
 - Higher = faster, snappier
 - Lower = slower, more gradual
@@ -1769,6 +1998,7 @@ User releases → Soft glide → Final snap → Settled
 - Glide default: 120 (smooth)
 
 **Damping:**
+
 - Resistance to motion (like friction)
 - Higher = stops quicker, less bounce
 - Lower = more bounce, oscillation
@@ -1777,12 +2007,14 @@ User releases → Soft glide → Final snap → Settled
 - Glide default: 25 (gentle momentum)
 
 **Velocity:**
+
 - Initial speed from user gesture
 - Passed from Framer Motion's PanInfo
 - Makes animation feel connected to thumb movement
 - Zero for snap-back (starts from rest)
 
 **Visual Comparison:**
+
 ```
 HIGH STIFFNESS (500):
 Position
@@ -1824,26 +2056,33 @@ Position
 **Problem:** User can trigger new animation before previous finishes
 
 **Solution:**
-```typescript
-const isAnimating = useRef(false)
 
-const goToIndex = useCallback(async (targetIndex, velocity, isMultiSkip) => {
-  if (isAnimating.current) {
-    x.stop() // Interrupt current animation
-  }
-  
-  isAnimating.current = true
-  
-  try {
-    // Perform animation(s)
-    await animate(/* ... */)
-  } finally {
-    isAnimating.current = false
-  }
-}, [/* deps */])
+```typescript
+const isAnimating = useRef(false);
+
+const goToIndex = useCallback(
+  async (targetIndex, velocity, isMultiSkip) => {
+    if (isAnimating.current) {
+      x.stop(); // Interrupt current animation
+    }
+
+    isAnimating.current = true;
+
+    try {
+      // Perform animation(s)
+      await animate(/* ... */);
+    } finally {
+      isAnimating.current = false;
+    }
+  },
+  [
+    /* deps */
+  ]
+);
 ```
 
 **Behavior:**
+
 - New gesture interrupts current animation
 - No animation queue/overlap
 - Always responsive to new input
@@ -1852,18 +2091,21 @@ const goToIndex = useCallback(async (targetIndex, velocity, isMultiSkip) => {
 ### Props for Animation Control
 
 **Flick Animation:**
+
 ```typescript
 flickStiffness?: number  // Default: 500, Range: 100-1000
 flickDamping?: number    // Default: 55, Range: 10-100
 ```
 
 **Glide Animation:**
+
 ```typescript
 glideStiffness?: number  // Default: 120, Range: 50-500
 glideDamping?: number    // Default: 25, Range: 10-100
 ```
 
 **Gesture Sensitivity:**
+
 ```typescript
 velocityScalerPercentage?: number  // Default: 20, Range: 1-100
 snapThreshold?: number             // Default: 10, Range: 5-50
@@ -1872,6 +2114,7 @@ snapThreshold?: number             // Default: 10, Range: 5-50
 ### Preset Recommendations
 
 **Snappy (Responsive UI):**
+
 ```typescript
 <AdaptiveCarousel
   flickStiffness={700}
@@ -1882,6 +2125,7 @@ snapThreshold?: number             // Default: 10, Range: 5-50
 ```
 
 **Smooth (Gallery Feel):**
+
 ```typescript
 <AdaptiveCarousel
   flickStiffness={300}
@@ -1892,6 +2136,7 @@ snapThreshold?: number             // Default: 10, Range: 5-50
 ```
 
 **Bouncy (Playful):**
+
 ```typescript
 <AdaptiveCarousel
   flickStiffness={400}
@@ -1904,16 +2149,19 @@ snapThreshold?: number             // Default: 10, Range: 5-50
 ### Performance Optimization
 
 **Hardware Acceleration:**
+
 - Uses `transform: translateX()` (GPU-accelerated)
 - No layout reflows during animation
 - 60fps on modern devices
 
 **Framer Motion Benefits:**
+
 - Optimized animation loop
 - Automatic GPU acceleration
 - Minimal JavaScript overhead
 
 **Avoided Approaches:**
+
 - `left` property (triggers layout)
 - `margin-left` (triggers layout)
 - `scrollLeft` (janky on mobile)
@@ -1921,30 +2169,39 @@ snapThreshold?: number             // Default: 10, Range: 5-50
 ### Animation Debug Tips
 
 **Add Temporary Logging:**
+
 ```typescript
-const goToIndex = useCallback(async (targetIndex, velocity, isMultiSkip) => {
-  console.log({
-    from: currentIndex,
-    to: targetIndex,
-    type: isMultiSkip ? 'Multi-card glide' : 'Single-card flick',
-    velocity,
-    duration: isMultiSkip ? 'Two-step' : 'One-step'
-  })
-  // ... animation logic
-}, [/* deps */])
+const goToIndex = useCallback(
+  async (targetIndex, velocity, isMultiSkip) => {
+    console.log({
+      from: currentIndex,
+      to: targetIndex,
+      type: isMultiSkip ? "Multi-card glide" : "Single-card flick",
+      velocity,
+      duration: isMultiSkip ? "Two-step" : "One-step",
+    });
+    // ... animation logic
+  },
+  [
+    /* deps */
+  ]
+);
 ```
 
 **Visual Indicators:**
+
 ```typescript
 // Add during development
-<div style={{
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  background: isMultiSkip ? 'rgba(255,0,0,0.3)' : 'rgba(0,255,0,0.3)',
-  padding: '4px 8px'
-}}>
-  {isMultiSkip ? 'GLIDE' : 'FLICK'}
+<div
+  style={{
+    position: "absolute",
+    top: 0,
+    left: 0,
+    background: isMultiSkip ? "rgba(255,0,0,0.3)" : "rgba(0,255,0,0.3)",
+    padding: "4px 8px",
+  }}
+>
+  {isMultiSkip ? "GLIDE" : "FLICK"}
 </div>
 ```
 
@@ -1959,144 +2216,144 @@ interface AdaptiveCarouselProps {
   // ============================================
   // LAYOUT
   // ============================================
-  
-  children: React.ReactNode
+
+  children: React.ReactNode;
   // Content to display in carousel
   // Each child becomes one carousel item
-  
-  columns?: number
+
+  columns?: number;
   // Number of visible columns
   // Default: 1
   // Range: 1-6
   // Note: Affects item width calculation
-  
-  gap?: number
+
+  gap?: number;
   // Space between cards (px)
   // Default: 8
   // Range: 4-50
-  
-  horizontalPadding?: number
+
+  horizontalPadding?: number;
   // Left/right padding (px)
   // Default: 16
   // Range: 0-100
-  
-  verticalPadding?: number
+
+  verticalPadding?: number;
   // Top/bottom padding (px)
   // Default: 0
   // Range: 0-100
-  
-  peakAmount?: number
+
+  peakAmount?: number;
   // How much of next card to show (px)
   // Default: 16
   // Range: 0-100
   // Note: Creates "peek" effect
-  
+
   // ============================================
   // GESTURE DETECTION
   // ============================================
-  
-  snapThreshold?: number
+
+  snapThreshold?: number;
   // Percentage of card width to trigger advance
   // Default: 10
   // Range: 5-50
   // Example: 10 = must drag 10% of card width
-  
-  velocityScaler?: number
+
+  velocityScaler?: number;
   // DEPRECATED: Use velocityScalerPercentage instead
   // Legacy prop, still supported for backward compat
-  
-  velocityScalerPercentage?: number
+
+  velocityScalerPercentage?: number;
   // Swipe sensitivity control
   // Default: 20
   // Range: 1-100
   // Lower = more sensitive (longer jumps)
   // Higher = less sensitive (shorter jumps)
   // Formula: actualScaler = 200 + (value/100) * 1000
-  
+
   // ============================================
   // ANIMATION PHYSICS
   // ============================================
-  
-  flickStiffness?: number
+
+  flickStiffness?: number;
   // Spring stiffness for single-card movements
   // Default: 500
   // Range: 100-1000
   // Higher = snappier, faster
-  
-  flickDamping?: number
+
+  flickDamping?: number;
   // Spring damping for single-card movements
   // Default: 55
   // Range: 10-100
   // Higher = less bounce, quicker stop
-  
-  glideStiffness?: number
+
+  glideStiffness?: number;
   // Spring stiffness for multi-card glides
   // Default: 120
   // Range: 50-500
   // Lower = smoother, more gradual
-  
-  glideDamping?: number
+
+  glideDamping?: number;
   // Spring damping for multi-card glides
   // Default: 25
   // Range: 10-100
   // Lower = more momentum, slight bounce
-  
+
   // ============================================
   // NAVIGATION UI
   // ============================================
-  
-  arrowsEnabled?: boolean
+
+  arrowsEnabled?: boolean;
   // Show left/right arrow buttons
   // Default: true
-  
-  arrowButtonSize?: number
+
+  arrowButtonSize?: number;
   // Arrow button size (px)
   // Default: 32
   // Options: 24, 32, 48, 56
-  
-  arrowColor?: string
+
+  arrowColor?: string;
   // Arrow button background color
   // Default: '#F2F2F2'
-  
-  arrowPressedColor?: string
+
+  arrowPressedColor?: string;
   // Arrow button pressed state color
   // Default: '#000000'
-  
-  arrowDisabledColor?: string
+
+  arrowDisabledColor?: string;
   // Arrow button disabled state color
   // Default: 'rgba(0, 0, 0, 0)' (transparent)
-  
-  arrowIconColor?: string
+
+  arrowIconColor?: string;
   // Arrow icon color
   // Default: '#4D4D4D'
-  
-  arrowIconDisabledColor?: string
+
+  arrowIconDisabledColor?: string;
   // Arrow icon color when disabled
   // Default: '#CCCCCC'
-  
+
   // ============================================
   // DOT NAVIGATION
   // ============================================
-  
-  dotsEnabled?: boolean
+
+  dotsEnabled?: boolean;
   // Show dot navigation indicators
   // Default: false
-  
-  dotSize?: number
+
+  dotSize?: number;
   // Dot size (px)
   // Default: 8
   // Range: 4-20
-  
-  dotGap?: number
+
+  dotGap?: number;
   // Gap between dots (px)
   // Default: 8
   // Range: 0-50
-  
-  dotColor?: string
+
+  dotColor?: string;
   // Active dot color
   // Default: '#000000'
-  
-  dotInactiveColor?: string
+
+  dotInactiveColor?: string;
   // Inactive dot color
   // Default: '#F2F2F2'
 }
@@ -2119,49 +2376,53 @@ const defaultProps = {
   glideDamping: 25,
   arrowsEnabled: true,
   arrowButtonSize: 32,
-  arrowColor: '#F2F2F2',
-  arrowPressedColor: '#000000',
-  arrowDisabledColor: 'rgba(0, 0, 0, 0)',
-  arrowIconColor: '#4D4D4D',
-  arrowIconDisabledColor: '#CCCCCC',
+  arrowColor: "#F2F2F2",
+  arrowPressedColor: "#000000",
+  arrowDisabledColor: "rgba(0, 0, 0, 0)",
+  arrowIconColor: "#4D4D4D",
+  arrowIconDisabledColor: "#CCCCCC",
   dotsEnabled: false,
   dotSize: 8,
   dotGap: 8,
-  dotColor: '#000000',
-  dotInactiveColor: '#F2F2F2'
-}
+  dotColor: "#000000",
+  dotInactiveColor: "#F2F2F2",
+};
 ```
 
 ### Prop Interactions
 
 **columns + gap + horizontalPadding + peakAmount:**
+
 ```typescript
 // These work together to calculate item width
-const availableWidth = containerWidth - (horizontalPadding * 2) - (peakAmount * 2)
-const totalGaps = (columns - 1) * gap
-const itemWidth = (availableWidth - totalGaps) / columns
+const availableWidth = containerWidth - horizontalPadding * 2 - peakAmount * 2;
+const totalGaps = (columns - 1) * gap;
+const itemWidth = (availableWidth - totalGaps) / columns;
 ```
 
 **velocityScalerPercentage + gesture detection:**
+
 ```typescript
 // Affects how far multi-card glides travel
-const actualScaler = 200 + (velocityScalerPercentage / 100) * 1000
-const indexJump = Math.round(velocity / actualScaler)
+const actualScaler = 200 + (velocityScalerPercentage / 100) * 1000;
+const indexJump = Math.round(velocity / actualScaler);
 ```
 
 **flickStiffness/Damping + glideStiffness/Damping:**
+
 ```typescript
 // Different physics for different gesture types
 if (isMultiSkip) {
-  animate(x, target, { stiffness: glideStiffness, damping: glideDamping })
+  animate(x, target, { stiffness: glideStiffness, damping: glideDamping });
 } else {
-  animate(x, target, { stiffness: flickStiffness, damping: flickDamping })
+  animate(x, target, { stiffness: flickStiffness, damping: flickDamping });
 }
 ```
 
 ### Usage Examples
 
 **Basic (Minimal Props):**
+
 ```typescript
 <AdaptiveCarousel>
   <div>Slide 1</div>
@@ -2171,17 +2432,17 @@ if (isMultiSkip) {
 ```
 
 **Multi-Column Grid:**
+
 ```typescript
-<AdaptiveCarousel
-  columns={2}
-  gap={16}
-  peakAmount={24}
->
-  {items.map(item => <Card key={item.id} {...item} />)}
+<AdaptiveCarousel columns={2} gap={16} peakAmount={24}>
+  {items.map((item) => (
+    <Card key={item.id} {...item} />
+  ))}
 </AdaptiveCarousel>
 ```
 
 **Custom Styling:**
+
 ```typescript
 <AdaptiveCarousel
   arrowsEnabled={true}
@@ -2196,9 +2457,10 @@ if (isMultiSkip) {
 ```
 
 **High Sensitivity (Longer Jumps):**
+
 ```typescript
 <AdaptiveCarousel
-  velocityScalerPercentage={5}  // Very sensitive
+  velocityScalerPercentage={5} // Very sensitive
   glideStiffness={150}
 >
   {content}
@@ -2206,9 +2468,10 @@ if (isMultiSkip) {
 ```
 
 **Low Sensitivity (Shorter Jumps):**
+
 ```typescript
 <AdaptiveCarousel
-  velocityScalerPercentage={60}  // Less sensitive
+  velocityScalerPercentage={60} // Less sensitive
   snapThreshold={20}
 >
   {content}
@@ -2216,17 +2479,15 @@ if (isMultiSkip) {
 ```
 
 **Snappy Animation:**
+
 ```typescript
-<AdaptiveCarousel
-  flickStiffness={800}
-  flickDamping={40}
-  glideStiffness={200}
->
+<AdaptiveCarousel flickStiffness={800} flickDamping={40} glideStiffness={200}>
   {content}
 </AdaptiveCarousel>
 ```
 
 **Smooth Animation:**
+
 ```typescript
 <AdaptiveCarousel
   flickStiffness={300}
@@ -2241,6 +2502,7 @@ if (isMultiSkip) {
 ### Framer Property Controls
 
 **Layout Controls:**
+
 - Columns: Stepper (1-6)
 - Gap: Slider (4-50px)
 - Horizontal Padding: Slider (0-100px)
@@ -2248,16 +2510,19 @@ if (isMultiSkip) {
 - Peak Amount: Slider (0-100px)
 
 **Gesture Controls:**
+
 - Snap Threshold: Slider (5-50%)
 - Velocity Scaler %: Slider (1-100%)
 
 **Animation Controls:**
+
 - Flick Stiffness: Slider (100-1000)
 - Flick Damping: Slider (10-100)
 - Glide Stiffness: Slider (50-500)
 - Glide Damping: Slider (10-100)
 
 **Arrow Controls:**
+
 - Arrows Enabled: Toggle
 - Arrow Button Size: Options (24, 32, 48, 56)
 - Arrow Color: Color picker
@@ -2267,6 +2532,7 @@ if (isMultiSkip) {
 - Arrow Icon Disabled Color: Color picker
 
 **Dot Controls:**
+
 - Dots Enabled: Toggle
 - Dot Size: Slider (4-20px)
 - Dot Gap: Slider (0-50px)
@@ -2280,6 +2546,7 @@ if (isMultiSkip) {
 ### Installation
 
 **For Framer:**
+
 1. Open your Framer project
 2. Create a new Code File
 3. Name it `AdaptiveCarousel.tsx`
@@ -2287,6 +2554,7 @@ if (isMultiSkip) {
 5. Use in your canvas as a component
 
 **For React Projects:**
+
 ```bash
 # Install dependencies
 npm install framer-motion lucide-react
@@ -2298,31 +2566,29 @@ cp AdaptiveCarousel.1.1.0.tsx src/components/
 ### Basic Implementation
 
 **Step 1: Import**
+
 ```typescript
-import AdaptiveCarousel from './AdaptiveCarousel.1.1.0'
+import AdaptiveCarousel from "./AdaptiveCarousel.1.1.0";
 ```
 
 **Step 2: Use with Content**
+
 ```typescript
 function MyComponent() {
   return (
     <AdaptiveCarousel>
-      <div style={{ background: 'red', height: 200 }}>Slide 1</div>
-      <div style={{ background: 'blue', height: 200 }}>Slide 2</div>
-      <div style={{ background: 'green', height: 200 }}>Slide 3</div>
+      <div style={{ background: "red", height: 200 }}>Slide 1</div>
+      <div style={{ background: "blue", height: 200 }}>Slide 2</div>
+      <div style={{ background: "green", height: 200 }}>Slide 3</div>
     </AdaptiveCarousel>
-  )
+  );
 }
 ```
 
 **Step 3: Customize**
+
 ```typescript
-<AdaptiveCarousel
-  columns={2}
-  gap={16}
-  arrowsEnabled={true}
-  dotsEnabled={true}
->
+<AdaptiveCarousel columns={2} gap={16} arrowsEnabled={true} dotsEnabled={true}>
   {/* Your content */}
 </AdaptiveCarousel>
 ```
@@ -2330,6 +2596,7 @@ function MyComponent() {
 ### Common Patterns
 
 **Image Gallery:**
+
 ```typescript
 <AdaptiveCarousel
   columns={1}
@@ -2339,18 +2606,19 @@ function MyComponent() {
   flickStiffness={300}
   glideDamping={30}
 >
-  {images.map(img => (
+  {images.map((img) => (
     <img
       key={img.id}
       src={img.url}
       alt={img.alt}
-      style={{ width: '100%', height: '400px', objectFit: 'cover' }}
+      style={{ width: "100%", height: "400px", objectFit: "cover" }}
     />
   ))}
 </AdaptiveCarousel>
 ```
 
 **Product Grid:**
+
 ```typescript
 <AdaptiveCarousel
   columns={2}
@@ -2359,13 +2627,14 @@ function MyComponent() {
   peakAmount={20}
   velocityScalerPercentage={30}
 >
-  {products.map(product => (
+  {products.map((product) => (
     <ProductCard key={product.id} {...product} />
   ))}
 </AdaptiveCarousel>
 ```
 
 **Testimonials:**
+
 ```typescript
 <AdaptiveCarousel
   columns={1}
@@ -2376,7 +2645,7 @@ function MyComponent() {
   arrowIconColor="#000000"
   snapThreshold={15}
 >
-  {testimonials.map(testimonial => (
+  {testimonials.map((testimonial) => (
     <TestimonialCard key={testimonial.id} {...testimonial} />
   ))}
 </AdaptiveCarousel>
@@ -2385,10 +2654,11 @@ function MyComponent() {
 ### Responsive Behavior
 
 **Desktop vs Mobile:**
+
 ```typescript
 function ResponsiveCarousel() {
-  const isMobile = useMediaQuery('(max-width: 768px)')
-  
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   return (
     <AdaptiveCarousel
       columns={isMobile ? 1 : 3}
@@ -2398,14 +2668,15 @@ function ResponsiveCarousel() {
     >
       {/* Content */}
     </AdaptiveCarousel>
-  )
+  );
 }
 ```
 
 **Dynamic Content:**
+
 ```typescript
 <AdaptiveCarousel columns={2}>
-  {data.map(item => (
+  {data.map((item) => (
     <div key={item.id}>
       <h3>{item.title}</h3>
       <p>{item.description}</p>
@@ -2420,24 +2691,27 @@ function ResponsiveCarousel() {
 **Important:** Children must accept width/height: 100%
 
 **Good:**
+
 ```typescript
 <AdaptiveCarousel>
-  <div style={{ width: '100%', height: '100%', background: 'red' }}>
+  <div style={{ width: "100%", height: "100%", background: "red" }}>
     Content
   </div>
 </AdaptiveCarousel>
 ```
 
 **Bad (will cause layout issues):**
+
 ```typescript
 <AdaptiveCarousel>
-  <div style={{ width: '300px', height: '200px' }}>
+  <div style={{ width: "300px", height: "200px" }}>
     {/* Fixed dimensions don't adapt */}
   </div>
 </AdaptiveCarousel>
 ```
 
 **CSS Module Example:**
+
 ```css
 /* Card.module.css */
 .card {
@@ -2451,7 +2725,7 @@ function ResponsiveCarousel() {
 
 ```typescript
 <AdaptiveCarousel>
-  {items.map(item => (
+  {items.map((item) => (
     <div key={item.id} className={styles.card}>
       {/* Content */}
     </div>
@@ -2462,6 +2736,7 @@ function ResponsiveCarousel() {
 ### Container Requirements
 
 **Parent Container:**
+
 ```typescript
 // Good: Defined width and height
 <div style={{ width: '100%', height: '500px' }}>
@@ -2488,12 +2763,10 @@ function ResponsiveCarousel() {
 ### Accessibility Setup
 
 **Screen Reader Content:**
+
 ```typescript
-<AdaptiveCarousel
-  arrowsEnabled={true}
-  dotsEnabled={true}
->
-  {items.map(item => (
+<AdaptiveCarousel arrowsEnabled={true} dotsEnabled={true}>
+  {items.map((item) => (
     <div
       key={item.id}
       role="group"
@@ -2506,6 +2779,7 @@ function ResponsiveCarousel() {
 ```
 
 **Keyboard Navigation:**
+
 - Automatically enabled
 - Arrow keys work when carousel is focused
 - Tab through arrow buttons and dots
@@ -2518,9 +2792,10 @@ function ResponsiveCarousel() {
 ### Fix 1: Math.floor Layout Gaps (Carousel_01)
 
 **Problem:**
+
 ```typescript
 // BEFORE
-const widthPerItem = Math.floor(totalWidthForCardFaces / columns)
+const widthPerItem = Math.floor(totalWidthForCardFaces / columns);
 
 // iPhone (375px width, 2 columns, 16px padding, 16px gaps)
 // Calculated: (375 - 32 - 16) / 2 = 163.5px
@@ -2529,15 +2804,17 @@ const widthPerItem = Math.floor(totalWidthForCardFaces / columns)
 ```
 
 **Solution:**
+
 ```typescript
 // AFTER
-const widthPerItem = totalWidthForCardFaces / columns
+const widthPerItem = totalWidthForCardFaces / columns;
 
 // Modern browsers handle subpixel rendering (163.5px)
 // No accumulated error, no gaps
 ```
 
 **Impact:**
+
 - Perfect layout on all devices
 - No visual gaps on mobile
 - Browsers optimize fractional pixels automatically
@@ -2549,32 +2826,35 @@ const widthPerItem = totalWidthForCardFaces / columns
 ### Fix 2: Children Not Filling Containers (Carousel_01)
 
 **Problem:**
+
 ```typescript
 // BEFORE
 const filledChild = cloneElement(child, {
   style: {
-    maxWidth: "100%",  // Only limits, doesn't force
+    maxWidth: "100%", // Only limits, doesn't force
     maxHeight: "100%",
   },
-})
+});
 ```
 
 **Solution:**
+
 ```typescript
 // AFTER
 const filledChild = cloneElement(child, {
   style: {
-    width: "100%",      // Forces width
-    height: "100%",     // Forces height
+    width: "100%", // Forces width
+    height: "100%", // Forces height
     minWidth: "unset",
     minHeight: "unset",
     maxWidth: "100%",
     maxHeight: "100%",
   },
-})
+});
 ```
 
 **Impact:**
+
 - Children always fill carousel items
 - No unexpected sizing issues
 - Consistent across all content types
@@ -2584,22 +2864,27 @@ const filledChild = cloneElement(child, {
 ### Fix 3: Velocity Direction Alignment (v0.1.1)
 
 **Problem:** "Charge up" bounce
+
 - User drags left while building velocity right
 - Result: Unwanted bounce in opposite direction
 
 **Solution:**
+
 ```typescript
 // In handleDragEnd
-const dragDirection = dragOffset > 0 ? 1 : -1
+const dragDirection = dragOffset > 0 ? 1 : -1;
 
 // Zero velocity if it opposes drag direction
-if ((dragDirection === 1 && info.velocity.x > 0) || 
-    (dragDirection === -1 && info.velocity.x < 0)) {
-  info.velocity.x = 0
+if (
+  (dragDirection === 1 && info.velocity.x > 0) ||
+  (dragDirection === -1 && info.velocity.x < 0)
+) {
+  info.velocity.x = 0;
 }
 ```
 
 **Impact:**
+
 - Eliminated charge-up bounce
 - Natural, expected behavior
 - User can't "cheat" the system
@@ -2611,24 +2896,26 @@ if ((dragDirection === 1 && info.velocity.x > 0) ||
 **Problem:** Long glides overshoot or undershoot target
 
 **Solution:** Progressive refinement
+
 ```typescript
 // Step 1: Soft glide with momentum
 await animate(x, nearTarget, {
   type: "spring",
-  stiffness: glideStiffness,  // 120
-  damping: glideDamping,      // 25
-  velocity: velocity
-})
+  stiffness: glideStiffness, // 120
+  damping: glideDamping, // 25
+  velocity: velocity,
+});
 
 // Step 2: Aggressive final snap
 await animate(x, finalTarget, {
-  stiffness: 1000,  // Very stiff
-  damping: 80,      // Heavy damping
-  velocity: 0       // Start from rest
-})
+  stiffness: 1000, // Very stiff
+  damping: 80, // Heavy damping
+  velocity: 0, // Start from rest
+});
 ```
 
 **Impact:**
+
 - Dramatically improved stop accuracy
 - Natural momentum feel + precision landing
 - Best of both worlds
@@ -2640,25 +2927,29 @@ await animate(x, finalTarget, {
 **Problem:** 16.7% false positive rate (flicks detected as glides)
 
 **Root Cause:**
+
 ```typescript
 // Original problematic thresholds
-GLIDE_VELOCITY_MEDIUM = 120  // Median flick = 123! Too low!
+GLIDE_VELOCITY_MEDIUM = 120; // Median flick = 123! Too low!
 ```
 
 **Solution:** Data-driven adjustment
+
 ```typescript
 // Optimized thresholds
-GLIDE_VELOCITY_MEDIUM = 75   // Below median flick
-GLIDE_VELOCITY_HIGH = 110    // More selective
-GLIDE_DISTANCE_HIGH_CONFIDENCE = 145  // Conservative
+GLIDE_VELOCITY_MEDIUM = 75; // Below median flick
+GLIDE_VELOCITY_HIGH = 110; // More selective
+GLIDE_DISTANCE_HIGH_CONFIDENCE = 145; // Conservative
 ```
 
 **Impact:**
+
 - False positive rate: 16.7% → 6.75% (60% reduction!)
 - Overall accuracy: 71.7% → 93.25% (21% improvement!)
 - Better user experience
 
 **Process:**
+
 1. Collected 180 labeled swipes from 6 users
 2. Analyzed median/variance per gesture type
 3. Identified threshold violations
@@ -2672,12 +2963,17 @@ GLIDE_DISTANCE_HIGH_CONFIDENCE = 145  // Conservative
 **Problem:** Extreme velocity = 10+ card jumps (disorienting)
 
 **Solution:**
+
 ```typescript
-const maxJump = 3
-const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelocityScaler)))
+const maxJump = 3;
+const indexJump = Math.min(
+  maxJump,
+  Math.max(1, Math.round(velocity / actualVelocityScaler))
+);
 ```
 
 **Impact:**
+
 - Prevents huge leaps
 - Maintains user orientation
 - User can still quickly browse with multiple swipes
@@ -2691,17 +2987,19 @@ const indexJump = Math.min(maxJump, Math.max(1, Math.round(velocity / actualVelo
 **Problem:** Same physics for all gestures felt inconsistent
 
 **Solution:** Separate settings for flicks vs glides
+
 ```typescript
 // Flicks: Snappy and responsive
-flickStiffness: 500
-flickDamping: 55
+flickStiffness: 500;
+flickDamping: 55;
 
 // Glides: Smooth and flowing
-glideStiffness: 120
-glideDamping: 25
+glideStiffness: 120;
+glideDamping: 25;
 ```
 
 **Impact:**
+
 - Flicks feel immediate
 - Glides feel natural
 - Each gesture has appropriate physics
@@ -2713,6 +3011,7 @@ glideDamping: 25
 **Problem:** `touchAction: 'pan-x'` blocked ALL vertical scrolling
 
 **Solution:** Angle-based directional lock
+
 ```typescript
 const angle = Math.abs(Math.atan2(info.offset.y, info.offset.x) * 180 / Math.PI)
 
@@ -2729,6 +3028,7 @@ if (directionLock === 'horizontal' && event.cancelable) {
 ```
 
 **Impact:**
+
 - Horizontal swipes control carousel
 - Vertical swipes scroll page
 - Natural mobile behavior (industry standard)
@@ -2742,12 +3042,14 @@ if (directionLock === 'horizontal' && event.cancelable) {
 **Decision:** Keep monolithic v1.1.0 as primary
 
 **Rationale:**
+
 1. Single source of truth (all logic in one file)
 2. Easier to copy/paste into Framer
 3. Better for solo/small team workflow
 4. Context-in-place preferred over distribution
 
 **Trade-off Accepted:**
+
 - Harder to unit test individual functions
 - Less code reuse across projects
 - But: Integration testing sufficient for use case
@@ -2763,12 +3065,14 @@ if (directionLock === 'horizontal' && event.cancelable) {
 **Decision:** Stick with 4-tier threshold system
 
 **Rationale:**
+
 1. 93.25% accuracy sufficient for production
 2. Transparent, debuggable thresholds
 3. No ML infrastructure needed
 4. Easy to tune based on user feedback
 
 **When to Reconsider:**
+
 - Need > 95% accuracy
 - Have large labeled dataset (1000+ swipes)
 - Can maintain ML pipeline
@@ -2783,28 +3087,31 @@ if (directionLock === 'horizontal' && event.cancelable) {
 **Context:** Cushioning (card-by-card animation) and last card snap conflated
 
 **Decision:** Completely separate concerns
+
 ```typescript
 // Cushioning controls: Affect intermediate cards only
-enableCushioning: boolean
-cushionIntensity: number
-cardClickPause: number
+enableCushioning: boolean;
+cushionIntensity: number;
+cardClickPause: number;
 
 // Last card controls: Always available
-finalCardDuration: number
-finalCardSlowdown: number
-lastCardFeel: preset
+finalCardDuration: number;
+finalCardSlowdown: number;
+lastCardFeel: preset;
 
 // Snap controls: Independent
-snapSpeed: number
-snapSmoothness: number
+snapSpeed: number;
+snapSmoothness: number;
 ```
 
 **Rationale:**
+
 - User can enable/disable independently
 - Clearer mental model
 - No unexpected interactions
 
 **Impact:**
+
 - Cushioning OFF still allows smooth last card approach
 - More flexible control
 - Better user understanding
@@ -2818,12 +3125,14 @@ snapSmoothness: number
 **Decision:** Pure angle-based (30°/60° thresholds)
 
 **Rationale:**
+
 - Industry standard (Instagram, Twitter)
 - Fast (5-10ms to lock)
 - Simple to implement
 - Accurate on modern devices
 
 **Alternative Considered:**
+
 - Distance + ratio (wait 10px then check)
 - Pro: Better jitter handling
 - Con: 50-100ms delay, page scrolls during wait
@@ -2837,156 +3146,168 @@ snapSmoothness: number
 ### Unit Testing
 
 **What to Test:**
+
 - Gesture detection logic
 - Layout calculations
 - Animation settings selection
 - Utility functions
 
 **Example Tests:**
-```typescript
-import { detectGesture } from './gestureDetection'
 
-describe('Gesture Detection', () => {
-  test('Tier 1: Long distance triggers glide', () => {
+```typescript
+import { detectGesture } from "./gestureDetection";
+
+describe("Gesture Detection", () => {
+  test("Tier 1: Long distance triggers glide", () => {
     const result = detectGesture(
-      150,  // distance (> 145)
-      100,  // velocity
-      25,   // acceleration
-      0,    // currentIndex
-      1,    // dragDirection
-      400,  // velocityScaler
-      200,  // itemWidth
-      10    // snapThreshold
-    )
-    
-    expect(result.isMultiSkip).toBe(true)
-    expect(result.targetIndex).toBeGreaterThan(0)
-  })
-  
-  test('Tier 4: Short distance snaps back', () => {
+      150, // distance (> 145)
+      100, // velocity
+      25, // acceleration
+      0, // currentIndex
+      1, // dragDirection
+      400, // velocityScaler
+      200, // itemWidth
+      10 // snapThreshold
+    );
+
+    expect(result.isMultiSkip).toBe(true);
+    expect(result.targetIndex).toBeGreaterThan(0);
+  });
+
+  test("Tier 4: Short distance snaps back", () => {
     const result = detectGesture(
-      5,    // distance (< 10% of 200px)
-      50,   // velocity
-      10,   // acceleration
-      0,    // currentIndex
-      1,    // dragDirection
-      400,  // velocityScaler
-      200,  // itemWidth
-      10    // snapThreshold
-    )
-    
-    expect(result.isMultiSkip).toBe(false)
-    expect(result.targetIndex).toBe(0) // Snap back to current
-  })
-})
+      5, // distance (< 10% of 200px)
+      50, // velocity
+      10, // acceleration
+      0, // currentIndex
+      1, // dragDirection
+      400, // velocityScaler
+      200, // itemWidth
+      10 // snapThreshold
+    );
+
+    expect(result.isMultiSkip).toBe(false);
+    expect(result.targetIndex).toBe(0); // Snap back to current
+  });
+});
 ```
 
 ### Integration Testing
 
 **What to Test:**
+
 - Component renders correctly
 - Navigation works (arrows, keyboard, gestures)
 - Props affect behavior as expected
 - Accessibility features present
 
 **Example Tests:**
-```typescript
-import { render, screen, fireEvent } from '@testing-library/react'
-import AdaptiveCarousel from './AdaptiveCarousel.1.1.0'
 
-describe('AdaptiveCarousel Integration', () => {
-  test('Renders all children', () => {
+```typescript
+import { render, screen, fireEvent } from "@testing-library/react";
+import AdaptiveCarousel from "./AdaptiveCarousel.1.1.0";
+
+describe("AdaptiveCarousel Integration", () => {
+  test("Renders all children", () => {
     render(
       <AdaptiveCarousel>
         <div>Item 1</div>
         <div>Item 2</div>
         <div>Item 3</div>
       </AdaptiveCarousel>
-    )
-    
-    expect(screen.getByText('Item 1')).toBeInTheDocument()
-    expect(screen.getByText('Item 2')).toBeInTheDocument()
-    expect(screen.getByText('Item 3')).toBeInTheDocument()
-  })
-  
-  test('Arrow navigation works', () => {
+    );
+
+    expect(screen.getByText("Item 1")).toBeInTheDocument();
+    expect(screen.getByText("Item 2")).toBeInTheDocument();
+    expect(screen.getByText("Item 3")).toBeInTheDocument();
+  });
+
+  test("Arrow navigation works", () => {
     const { container } = render(
       <AdaptiveCarousel arrowsEnabled={true}>
         <div>Item 1</div>
         <div>Item 2</div>
       </AdaptiveCarousel>
-    )
-    
-    const nextButton = screen.getByLabelText('Next slide')
-    fireEvent.click(nextButton)
-    
+    );
+
+    const nextButton = screen.getByLabelText("Next slide");
+    fireEvent.click(nextButton);
+
     // Check currentIndex changed (would need to expose via data attribute or context)
-    expect(container.querySelector('[data-current-index]')).toHaveAttribute('data-current-index', '1')
-  })
-  
-  test('Keyboard navigation works', () => {
+    expect(container.querySelector("[data-current-index]")).toHaveAttribute(
+      "data-current-index",
+      "1"
+    );
+  });
+
+  test("Keyboard navigation works", () => {
     render(
       <AdaptiveCarousel>
         <div>Item 1</div>
         <div>Item 2</div>
       </AdaptiveCarousel>
-    )
-    
-    const carousel = screen.getByRole('region')
-    carousel.focus()
-    
-    fireEvent.keyDown(carousel, { key: 'ArrowRight' })
-    
+    );
+
+    const carousel = screen.getByRole("region");
+    carousel.focus();
+
+    fireEvent.keyDown(carousel, { key: "ArrowRight" });
+
     // Verify navigation occurred
-  })
-})
+  });
+});
 ```
 
 ### E2E Testing (Playwright/Cypress)
 
 **What to Test:**
+
 - Gesture sequences on touch devices
 - Smooth animations
 - Cross-browser compatibility
 - Performance metrics
 
 **Example E2E Test:**
+
 ```typescript
 // Playwright example
-test('Swipe gesture advances carousel', async ({ page }) => {
-  await page.goto('/carousel-demo')
-  
-  const carousel = await page.locator('[role="region"]')
-  
+test("Swipe gesture advances carousel", async ({ page }) => {
+  await page.goto("/carousel-demo");
+
+  const carousel = await page.locator('[role="region"]');
+
   // Simulate swipe gesture
   await carousel.dragTo(carousel, {
     sourcePosition: { x: 300, y: 100 },
-    targetPosition: { x: 100, y: 100 }
-  })
-  
-  // Wait for animation
-  await page.waitForTimeout(500)
-  
-  // Verify card changed
-  const currentCard = await page.locator('.carousel-item.active').textContent()
-  expect(currentCard).toContain('Item 2')
-})
+    targetPosition: { x: 100, y: 100 },
+  });
 
-test('Multi-card glide works', async ({ page }) => {
-  await page.goto('/carousel-demo')
-  
+  // Wait for animation
+  await page.waitForTimeout(500);
+
+  // Verify card changed
+  const currentCard = await page.locator(".carousel-item.active").textContent();
+  expect(currentCard).toContain("Item 2");
+});
+
+test("Multi-card glide works", async ({ page }) => {
+  await page.goto("/carousel-demo");
+
   // Fast swipe
-  await page.mouse.move(300, 100)
-  await page.mouse.down()
-  await page.mouse.move(50, 100, { steps: 5 })
-  await page.mouse.up()
-  
-  await page.waitForTimeout(800)
-  
+  await page.mouse.move(300, 100);
+  await page.mouse.down();
+  await page.mouse.move(50, 100, { steps: 5 });
+  await page.mouse.up();
+
+  await page.waitForTimeout(800);
+
   // Should advance 2-3 cards
-  const currentIndex = await page.getAttribute('[data-current-index]', 'data-current-index')
-  expect(Number(currentIndex)).toBeGreaterThanOrEqual(2)
-})
+  const currentIndex = await page.getAttribute(
+    "[data-current-index]",
+    "data-current-index"
+  );
+  expect(Number(currentIndex)).toBeGreaterThanOrEqual(2);
+});
 ```
 
 ### Visual Regression Testing
@@ -2994,74 +3315,79 @@ test('Multi-card glide works', async ({ page }) => {
 **Tools:** Percy, Chromatic, Playwright screenshots
 
 **What to Test:**
+
 - Layout consistency across viewports
 - Animation states
 - Hover/focus states
 - Different content types
 
 **Example:**
+
 ```typescript
-test('Visual snapshot', async ({ page }) => {
-  await page.goto('/carousel-demo')
-  
+test("Visual snapshot", async ({ page }) => {
+  await page.goto("/carousel-demo");
+
   // Initial state
-  await page.screenshot({ path: 'carousel-initial.png' })
-  
+  await page.screenshot({ path: "carousel-initial.png" });
+
   // Hover state
-  await page.hover('.arrow-button-next')
-  await page.screenshot({ path: 'carousel-hover.png' })
-  
+  await page.hover(".arrow-button-next");
+  await page.screenshot({ path: "carousel-hover.png" });
+
   // After navigation
-  await page.click('.arrow-button-next')
-  await page.waitForTimeout(500)
-  await page.screenshot({ path: 'carousel-navigated.png' })
-  
+  await page.click(".arrow-button-next");
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: "carousel-navigated.png" });
+
   // Compare against baselines
-})
+});
 ```
 
 ### Performance Testing
 
 **Metrics to Track:**
+
 - FPS during animation (target: 60fps)
 - Paint times (target: < 16ms)
 - Memory usage
 - Bundle size
 
 **Tools:**
+
 - Chrome DevTools Performance tab
 - Lighthouse
 - WebPageTest
 - Bundle analyzer
 
 **Example Test:**
+
 ```typescript
-test('Animation maintains 60fps', async ({ page }) => {
-  await page.goto('/carousel-demo')
-  
+test("Animation maintains 60fps", async ({ page }) => {
+  await page.goto("/carousel-demo");
+
   // Start performance recording
   await page.evaluate(() => {
-    window.performance.mark('animation-start')
-  })
-  
+    window.performance.mark("animation-start");
+  });
+
   // Trigger animation
-  await page.click('.arrow-button-next')
-  await page.waitForTimeout(500)
-  
+  await page.click(".arrow-button-next");
+  await page.waitForTimeout(500);
+
   // End recording
   await page.evaluate(() => {
-    window.performance.mark('animation-end')
-    window.performance.measure('animation', 'animation-start', 'animation-end')
-  })
-  
+    window.performance.mark("animation-end");
+    window.performance.measure("animation", "animation-start", "animation-end");
+  });
+
   // Check frame rate
   const metrics = await page.evaluate(() => {
-    return window.performance.getEntriesByType('measure')[0]
-  })
-  
-  const fps = 1000 / (metrics.duration / 30) // 30 frames in animation
-  expect(fps).toBeGreaterThan(55) // Allow some variance
-})
+    return window.performance.getEntriesByType("measure")[0];
+  });
+
+  const fps = 1000 / (metrics.duration / 30); // 30 frames in animation
+  expect(fps).toBeGreaterThan(55); // Allow some variance
+});
 ```
 
 ### Accessibility Testing
@@ -3069,43 +3395,43 @@ test('Animation maintains 60fps', async ({ page }) => {
 **Tools:** axe-core, jest-axe, Pa11y
 
 **What to Test:**
+
 - ARIA labels present
 - Keyboard navigation functional
 - Focus indicators visible
 - Screen reader announcements
 
 **Example:**
+
 ```typescript
-import { axe, toHaveNoViolations } from 'jest-axe'
+import { axe, toHaveNoViolations } from "jest-axe";
 
-expect.extend(toHaveNoViolations)
+expect.extend(toHaveNoViolations);
 
-test('No accessibility violations', async () => {
+test("No accessibility violations", async () => {
   const { container } = render(
-    <AdaptiveCarousel
-      arrowsEnabled={true}
-      dotsEnabled={true}
-    >
+    <AdaptiveCarousel arrowsEnabled={true} dotsEnabled={true}>
       <div>Item 1</div>
       <div>Item 2</div>
     </AdaptiveCarousel>
-  )
-  
-  const results = await axe(container)
-  expect(results).toHaveNoViolations()
-})
+  );
 
-test('Arrow buttons have labels', () => {
-  render(<AdaptiveCarousel arrowsEnabled={true} />)
-  
-  expect(screen.getByLabelText('Previous slide')).toBeInTheDocument()
-  expect(screen.getByLabelText('Next slide')).toBeInTheDocument()
-})
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});
+
+test("Arrow buttons have labels", () => {
+  render(<AdaptiveCarousel arrowsEnabled={true} />);
+
+  expect(screen.getByLabelText("Previous slide")).toBeInTheDocument();
+  expect(screen.getByLabelText("Next slide")).toBeInTheDocument();
+});
 ```
 
 ### User Testing (Manual)
 
 **Test Protocol:**
+
 1. Give user the interface with no instructions
 2. Ask them to browse content
 3. Observe natural behavior
@@ -3116,12 +3442,14 @@ test('Arrow buttons have labels', () => {
    - False positives/negatives?
 
 **Success Criteria:**
+
 - User discovers gestures naturally (< 30 seconds)
 - 90%+ of intended gestures work correctly
 - No complaints about "jumpiness" or unexpected behavior
 - Smooth animations without stuttering
 
 **Diagnostic CSV Collection:**
+
 - Have users test with diagnostic overlay
 - Export CSV of their swipes
 - Analyze patterns per user
@@ -3134,6 +3462,7 @@ test('Arrow buttons have labels', () => {
 ### WCAG 2.1 AA Compliance
 
 **Standards Met:**
+
 - 2.1.1 Keyboard (Level A)
 - 2.1.2 No Keyboard Trap (Level A)
 - 2.4.3 Focus Order (Level A)
@@ -3143,6 +3472,7 @@ test('Arrow buttons have labels', () => {
 ### ARIA Implementation
 
 **Container:**
+
 ```typescript
 <div
   role="region"
@@ -3157,6 +3487,7 @@ test('Arrow buttons have labels', () => {
 ```
 
 **Attributes Explained:**
+
 - `role="region"`: Identifies as landmark
 - `aria-label`: Describes purpose
 - `aria-live="polite"`: Announces changes to screen readers
@@ -3164,6 +3495,7 @@ test('Arrow buttons have labels', () => {
 - `tabIndex={0}`: Makes focusable for keyboard
 
 **Arrow Buttons:**
+
 ```typescript
 <button
   onClick={() => navigate(-1)}
@@ -3185,106 +3517,119 @@ test('Arrow buttons have labels', () => {
 ```
 
 **Dot Navigation:**
+
 ```typescript
-{Array.from({ length: maxIndex + 1 }).map((_, index) => (
-  <button
-    key={index}
-    onClick={() => goToIndex(index)}
-    aria-label={`Go to slide ${index + 1}`}
-    aria-current={index === currentIndex ? 'true' : 'false'}
-  >
-    <span className="visually-hidden">
-      Slide {index + 1} of {maxIndex + 1}
-    </span>
-  </button>
-))}
+{
+  Array.from({ length: maxIndex + 1 }).map((_, index) => (
+    <button
+      key={index}
+      onClick={() => goToIndex(index)}
+      aria-label={`Go to slide ${index + 1}`}
+      aria-current={index === currentIndex ? "true" : "false"}
+    >
+      <span className="visually-hidden">
+        Slide {index + 1} of {maxIndex + 1}
+      </span>
+    </button>
+  ));
+}
 ```
 
 ### Keyboard Navigation
 
 **Supported Keys:**
 
-| Key | Action | Code |
-|-----|--------|------|
-| `←` | Previous card | `ArrowLeft` |
-| `→` | Next card | `ArrowRight` |
-| `Home` | First card | `Home` |
-| `End` | Last card | `End` |
-| `Enter` | Activate focused button/dot | `Enter` |
+| Key     | Action                      | Code                        |
+| ------- | --------------------------- | --------------------------- |
+| `←`     | Previous card               | `ArrowLeft`                 |
+| `→`     | Next card                   | `ArrowRight`                |
+| `Home`  | First card                  | `Home`                      |
+| `End`   | Last card                   | `End`                       |
+| `Enter` | Activate focused button/dot | `Enter`                     |
 | `Space` | Activate focused button/dot | `Space` (prevented default) |
-| `Tab` | Navigate between buttons | Default behavior |
+| `Tab`   | Navigate between buttons    | Default behavior            |
 
 **Implementation:**
+
 ```typescript
-const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-  // Ignore if user is typing in input
-  if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-    return
-  }
-  
-  switch (event.key) {
-    case 'ArrowLeft':
-      event.preventDefault()
-      if (currentIndex > 0) navigate(-1)
-      break
-      
-    case 'ArrowRight':
-      event.preventDefault()
-      if (currentIndex < maxIndex) navigate(1)
-      break
-      
-    case 'Home':
-      event.preventDefault()
-      goToIndex(0)
-      break
-      
-    case 'End':
-      event.preventDefault()
-      goToIndex(maxIndex)
-      break
-  }
-}, [currentIndex, maxIndex, navigate, goToIndex])
+const handleKeyDown = useCallback(
+  (event: React.KeyboardEvent) => {
+    // Ignore if user is typing in input
+    if (
+      event.target.tagName === "INPUT" ||
+      event.target.tagName === "TEXTAREA"
+    ) {
+      return;
+    }
+
+    switch (event.key) {
+      case "ArrowLeft":
+        event.preventDefault();
+        if (currentIndex > 0) navigate(-1);
+        break;
+
+      case "ArrowRight":
+        event.preventDefault();
+        if (currentIndex < maxIndex) navigate(1);
+        break;
+
+      case "Home":
+        event.preventDefault();
+        goToIndex(0);
+        break;
+
+      case "End":
+        event.preventDefault();
+        goToIndex(maxIndex);
+        break;
+    }
+  },
+  [currentIndex, maxIndex, navigate, goToIndex]
+);
 ```
 
 **Button Activation:**
+
 ```typescript
-const handleArrowKeyDown = useCallback((
-  event: React.KeyboardEvent,
-  direction: number,
-  disabled: boolean
-) => {
-  if (disabled) return
-  
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    navigate(direction)
-  }
-}, [navigate])
+const handleArrowKeyDown = useCallback(
+  (event: React.KeyboardEvent, direction: number, disabled: boolean) => {
+    if (disabled) return;
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      navigate(direction);
+    }
+  },
+  [navigate]
+);
 ```
 
 ### Focus Management
 
 **Focus Indicators:**
+
 ```css
 /* Visible focus outline */
 .carousel-container:focus-visible {
-  outline: 2px solid #007AFF;
+  outline: 2px solid #007aff;
   outline-offset: 2px;
 }
 
 button:focus-visible {
-  outline: 2px solid #007AFF;
+  outline: 2px solid #007aff;
   outline-offset: 2px;
 }
 ```
 
 **Focus Order:**
+
 1. Carousel container (for keyboard navigation)
 2. Previous arrow button
 3. Next arrow button
 4. Dot navigation buttons (left to right)
 
 **Logical Tab Order:**
+
 ```typescript
 // Container first (for arrow key navigation)
 <div tabIndex={0} onKeyDown={handleKeyDown}>
@@ -3300,11 +3645,13 @@ button:focus-visible {
 ### Screen Reader Support
 
 **Announcements:**
+
 - Current position: "Slide 2 of 5"
 - Navigation: "Navigated to slide 3"
 - Disabled state: "Previous button disabled"
 
 **Implementation via aria-live:**
+
 ```typescript
 <div aria-live="polite" aria-atomic="true">
   Slide {currentIndex + 1} of {maxIndex + 1}
@@ -3312,6 +3659,7 @@ button:focus-visible {
 ```
 
 **Hidden Text for Context:**
+
 ```css
 .visually-hidden {
   position: absolute;
@@ -3338,17 +3686,19 @@ button:focus-visible {
 **Requirements:** WCAG AA requires 4.5:1 for normal text, 3:1 for large text
 
 **Defaults Pass:**
+
 ```typescript
 // Arrow buttons
-arrowColor: '#F2F2F2'        // Background
-arrowIconColor: '#4D4D4D'    // Icon (10:1 contrast ratio ✅)
+arrowColor: "#F2F2F2"; // Background
+arrowIconColor: "#4D4D4D"; // Icon (10:1 contrast ratio ✅)
 
 // Dots
-dotColor: '#000000'          // Active (21:1 on white ✅)
-dotInactiveColor: '#F2F2F2'  // Inactive (sufficient ✅)
+dotColor: "#000000"; // Active (21:1 on white ✅)
+dotInactiveColor: "#F2F2F2"; // Inactive (sufficient ✅)
 ```
 
 **Testing:**
+
 - Use Chrome DevTools Lighthouse
 - WebAIM Contrast Checker
 - Ensure all interactive elements pass
@@ -3356,16 +3706,19 @@ dotInactiveColor: '#F2F2F2'  // Inactive (sufficient ✅)
 ### Motor Impairment Accommodations
 
 **Large Touch Targets:**
+
 - Minimum: 44x44px (iOS) or 48x48px (Android)
 - Default arrow buttons: 32x32px (with 8px padding = 48x48px hit area ✅)
 - Configurable via `arrowButtonSize` prop
 
 **Generous Timing:**
+
 - No time-based actions
 - User controls all navigation
 - Animations can be interrupted
 
 **No Precision Required:**
+
 - Swipe detection has threshold (10% of card width)
 - Don't need to swipe perfectly straight (straightness % monitored but not enforced)
 - Snap-back for uncertain gestures
@@ -3373,21 +3726,24 @@ dotInactiveColor: '#F2F2F2'  // Inactive (sufficient ✅)
 ### Reduced Motion
 
 **Respects User Preference:**
+
 ```typescript
 // Can be added
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const prefersReducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+).matches;
 
 const animationConfig = prefersReducedMotion
   ? {
       type: "tween",
       duration: 0.3,
-      ease: "easeInOut"
+      ease: "easeInOut",
     }
   : {
       type: "spring",
       stiffness: flickStiffness,
-      damping: flickDamping
-    }
+      damping: flickDamping,
+    };
 ```
 
 **Implementation Note:** Not currently in v1.1.0, but can be added if needed
@@ -3399,6 +3755,7 @@ const animationConfig = prefersReducedMotion
 ### Issue: Cards Not Filling Containers
 
 **Symptoms:**
+
 - Gaps within carousel items
 - Content doesn't stretch to fill space
 - Inconsistent item heights
@@ -3406,6 +3763,7 @@ const animationConfig = prefersReducedMotion
 **Cause:** Children not accepting width/height: 100%
 
 **Solution:**
+
 ```typescript
 // Ensure children have proper styling
 <AdaptiveCarousel>
@@ -3430,11 +3788,13 @@ const animationConfig = prefersReducedMotion
 ### Issue: Gestures Not Responsive / Detection Issues
 
 **Symptoms:**
+
 - Swipes don't advance
 - Too sensitive or not sensitive enough
 - Unexpected multi-card jumps
 
 **Cause 1: Incorrect snapThreshold**
+
 ```typescript
 // Too high (user must drag very far)
 <AdaptiveCarousel snapThreshold={40} />
@@ -3447,6 +3807,7 @@ const animationConfig = prefersReducedMotion
 ```
 
 **Cause 2: Velocity scaler misconfigured**
+
 ```typescript
 // Too sensitive (long jumps from small swipes)
 <AdaptiveCarousel velocityScalerPercentage={5} />
@@ -3459,6 +3820,7 @@ const animationConfig = prefersReducedMotion
 ```
 
 **Cause 3: touch-action CSS conflict**
+
 ```css
 /* Problematic global CSS */
 * {
@@ -3472,6 +3834,7 @@ const animationConfig = prefersReducedMotion
 ```
 
 **Debugging Steps:**
+
 1. Add temporary logging to handleDragEnd
 2. Check distance, velocity, acceleration values
 3. Verify thresholds being checked
@@ -3482,27 +3845,30 @@ const animationConfig = prefersReducedMotion
 ### Issue: Animation Stuttering / Performance
 
 **Symptoms:**
+
 - Janky animations
 - Frame drops during swipes
 - Choppy movement
 
 **Cause 1: Too many re-renders**
+
 ```typescript
 // Bad: State in parent causing re-renders
 function Parent() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  
-  return <AdaptiveCarousel onIndexChange={setCurrentIndex} />
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  return <AdaptiveCarousel onIndexChange={setCurrentIndex} />;
   // Every animation frame causes parent re-render!
 }
 
 // Solution: Let carousel manage its own state
 function Parent() {
-  return <AdaptiveCarousel /> // Self-contained
+  return <AdaptiveCarousel />; // Self-contained
 }
 ```
 
 **Cause 2: Expensive children**
+
 ```typescript
 // Bad: Heavy computations in children
 <AdaptiveCarousel>
@@ -3520,6 +3886,7 @@ function Parent() {
 ```
 
 **Cause 3: Conflicting CSS transforms**
+
 ```css
 /* Bad: Transform on carousel items */
 .carousel-item {
@@ -3533,6 +3900,7 @@ function Parent() {
 ```
 
 **Debugging:**
+
 1. Open Chrome DevTools Performance tab
 2. Start recording
 3. Perform swipe gesture
@@ -3544,28 +3912,32 @@ function Parent() {
 ### Issue: Keyboard Navigation Not Working
 
 **Symptoms:**
+
 - Arrow keys don't navigate
 - Keys work sometimes but not others
 - Focus lost after navigation
 
 **Cause 1: Carousel not focused**
+
 ```typescript
 // Solution: Click carousel first, then use arrows
 // Or programmatically focus on mount
 useEffect(() => {
-  containerRef.current?.focus()
-}, [])
+  containerRef.current?.focus();
+}, []);
 ```
 
 **Cause 2: Input field is focused**
+
 ```typescript
 // Keyboard nav intentionally disabled when typing
-if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-  return // Don't capture keys
+if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") {
+  return; // Don't capture keys
 }
 ```
 
 **Cause 3: Event propagation blocked**
+
 ```typescript
 // Bad: Parent component stopping events
 <div onKeyDown={(e) => e.stopPropagation()}>
@@ -3576,6 +3948,7 @@ if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
 ```
 
 **Cause 4: tabIndex not set**
+
 ```typescript
 // Carousel container needs to be focusable
 <div tabIndex={0} onKeyDown={handleKeyDown}>
@@ -3588,6 +3961,7 @@ if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
 ### Issue: Layout Gaps on Mobile
 
 **Symptoms:**
+
 - Visible gaps between cards
 - Gaps only appear on specific devices
 - Math doesn't add up (card widths don't fill container)
@@ -3598,13 +3972,14 @@ if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
 
 ```typescript
 // NEVER do this
-const itemWidth = Math.floor(availableWidth / columns)
+const itemWidth = Math.floor(availableWidth / columns);
 
 // ALWAYS do this
-const itemWidth = availableWidth / columns
+const itemWidth = availableWidth / columns;
 ```
 
 **Verification:**
+
 ```typescript
 // Add temporary logging
 console.log({
@@ -3614,8 +3989,12 @@ console.log({
   horizontalPadding,
   peakAmount,
   calculatedItemWidth: itemWidth,
-  totalWidth: (itemWidth * columns) + ((columns - 1) * gap) + (horizontalPadding * 2) + (peakAmount * 2)
-})
+  totalWidth:
+    itemWidth * columns +
+    (columns - 1) * gap +
+    horizontalPadding * 2 +
+    peakAmount * 2,
+});
 // totalWidth should equal containerWidth (or very close due to floating point)
 ```
 
@@ -3624,6 +4003,7 @@ console.log({
 ### Issue: Directional Lock Not Working
 
 **Symptoms:**
+
 - Can't scroll page vertically when finger on carousel
 - Or: Carousel moves when trying to scroll page
 
@@ -3634,18 +4014,20 @@ console.log({
 ```typescript
 // In handleDrag
 if (directionLock === null) {
-  const angle = Math.abs(Math.atan2(info.offset.y, info.offset.x) * 180 / Math.PI)
-  
+  const angle = Math.abs(
+    (Math.atan2(info.offset.y, info.offset.x) * 180) / Math.PI
+  );
+
   if (angle < 30) {
-    setDirectionLock('horizontal')
+    setDirectionLock("horizontal");
   } else if (angle > 60) {
-    setDirectionLock('vertical')
+    setDirectionLock("vertical");
   }
 }
 
 // Only prevent default if locked horizontal
-if (directionLock === 'horizontal' && event.cancelable) {
-  event.preventDefault()
+if (directionLock === "horizontal" && event.cancelable) {
+  event.preventDefault();
 }
 ```
 
@@ -3654,19 +4036,19 @@ if (directionLock === 'horizontal' && event.cancelable) {
 ### Issue: Dots Not Showing / Arrow Buttons Missing
 
 **Symptoms:**
+
 - Navigation UI elements invisible
 - Space reserved but nothing rendered
 
 **Cause 1: Props not enabled**
+
 ```typescript
 // Solution: Explicitly enable
-<AdaptiveCarousel
-  arrowsEnabled={true}
-  dotsEnabled={true}
-/>
+<AdaptiveCarousel arrowsEnabled={true} dotsEnabled={true} />
 ```
 
 **Cause 2: Z-index conflict**
+
 ```css
 /* Bad: Parent has higher z-index */
 .parent {
@@ -3681,6 +4063,7 @@ if (directionLock === 'horizontal' && event.cancelable) {
 ```
 
 **Cause 3: Color matches background**
+
 ```typescript
 // Check if colors visible against background
 <AdaptiveCarousel
@@ -3701,6 +4084,7 @@ if (directionLock === 'horizontal' && event.cancelable) {
 ### Issue: Items Jump to Wrong Position
 
 **Symptoms:**
+
 - Navigation skips cards unexpectedly
 - Lands between cards
 - Position calculation seems off
@@ -3708,31 +4092,38 @@ if (directionLock === 'horizontal' && event.cancelable) {
 **Cause:** Incorrect drag constraints or index calculation
 
 **Debug Steps:**
+
 ```typescript
 // Add logging to goToIndex
-const goToIndex = useCallback(async (targetIndex, velocity, isMultiSkip) => {
-  console.log({
-    from: currentIndex,
-    to: targetIndex,
-    targetX: -(targetIndex * (itemWidth + gap)),
-    itemWidth,
-    gap
-  })
-  // ... rest of function
-}, [/* deps */])
+const goToIndex = useCallback(
+  async (targetIndex, velocity, isMultiSkip) => {
+    console.log({
+      from: currentIndex,
+      to: targetIndex,
+      targetX: -(targetIndex * (itemWidth + gap)),
+      itemWidth,
+      gap,
+    });
+    // ... rest of function
+  },
+  [
+    /* deps */
+  ]
+);
 ```
 
 **Common Fix:** Ensure drag constraints match layout
+
 ```typescript
 const dragConstraints = useMemo(() => {
-  const totalWidth = (itemWidth * totalItems) + ((totalItems - 1) * gap)
-  const maxDrag = totalWidth - containerWidth + (horizontalPadding * 2)
-  
+  const totalWidth = itemWidth * totalItems + (totalItems - 1) * gap;
+  const maxDrag = totalWidth - containerWidth + horizontalPadding * 2;
+
   return {
     left: -maxDrag,
-    right: 0
-  }
-}, [itemWidth, totalItems, gap, containerWidth, horizontalPadding])
+    right: 0,
+  };
+}, [itemWidth, totalItems, gap, containerWidth, horizontalPadding]);
 ```
 
 ---
@@ -3740,6 +4131,7 @@ const dragConstraints = useMemo(() => {
 ### Issue: Carousel Collapses / No Height
 
 **Symptoms:**
+
 - Carousel has zero height
 - Children invisible
 - Only shows navigation UI
@@ -3747,6 +4139,7 @@ const dragConstraints = useMemo(() => {
 **Cause:** Parent container has no defined height
 
 **Solution:**
+
 ```typescript
 // Bad: Undefined height
 <div>
@@ -3779,15 +4172,18 @@ const dragConstraints = useMemo(() => {
 #### Issue 1: Extreme Variance Users
 
 **Description:**
+
 - Users like Ben with 1-2,066 px/s velocity range
 - Hard to classify consistently
 - Current system achieves 93.25% but some edge cases remain
 
 **Workaround:**
+
 - Per-user calibration (not implemented)
 - Or: User can adjust `velocityScalerPercentage` prop manually
 
 **Future Solution:**
+
 - ML classifier trained per-user
 - Adaptive threshold adjustment based on error feedback
 
@@ -3796,15 +4192,18 @@ const dragConstraints = useMemo(() => {
 #### Issue 2: Scroll Lock Edge Cases
 
 **Description:**
+
 - 30-60° diagonal swipes ambiguous
 - System waits for clearer signal
 - Rare cases where user swipes at exactly 45°
 
 **Workaround:**
+
 - Rarely affects users (< 1% of swipes)
 - System eventually locks after more distance
 
 **Future Solution:**
+
 - Add 3px buffer before angle detection
 - Or: Machine learning for intent classification
 
@@ -3813,15 +4212,18 @@ const dragConstraints = useMemo(() => {
 #### Issue 3: No Virtualization
 
 **Description:**
+
 - All items rendered at once
 - Performance degrades with 100+ items
 - Memory usage scales with item count
 
 **Impact:**
+
 - Works fine for typical use (< 50 items)
 - Not suitable for infinite lists
 
 **Future Solution:**
+
 - Implement windowing (render visible + buffer)
 - Libraries: react-window, react-virtuoso
 - Requires architecture changes
@@ -3831,13 +4233,16 @@ const dragConstraints = useMemo(() => {
 #### Issue 4: No Autoplay
 
 **Description:**
+
 - Component doesn't auto-advance
 - User must manually navigate
 
 **Workaround:**
+
 - Implement in parent component with timer
 
 **Future Work:**
+
 - Add configurable autoplay
 - Pause on hover/interaction
 - Progress indicator option
@@ -3849,27 +4254,23 @@ const dragConstraints = useMemo(() => {
 #### Enhancement 1: Advanced Gesture Features
 
 **Pinch to Zoom:**
+
 ```typescript
 // Future API
-<AdaptiveCarousel
-  pinchEnabled={true}
-  minZoom={1}
-  maxZoom={3}
-/>
+<AdaptiveCarousel pinchEnabled={true} minZoom={1} maxZoom={3} />
 ```
 
 **3D Rotation:**
+
 ```typescript
-<AdaptiveCarousel
-  rotateEnabled={true}
-  rotationAxis="y"
-/>
+<AdaptiveCarousel rotateEnabled={true} rotationAxis="y" />
 ```
 
 **Multi-Finger Gestures:**
+
 ```typescript
 <AdaptiveCarousel
-  twoFingerSwipe="skip"  // Skip multiple cards
+  twoFingerSwipe="skip" // Skip multiple cards
   threeFingerSwipe="end" // Go to last card
 />
 ```
@@ -3879,6 +4280,7 @@ const dragConstraints = useMemo(() => {
 #### Enhancement 2: Animation Presets
 
 **Gallery Mode:**
+
 ```typescript
 <AdaptiveCarousel preset="gallery">
   {/* Slow, deliberate animations */}
@@ -3886,6 +4288,7 @@ const dragConstraints = useMemo(() => {
 ```
 
 **Quick Browse:**
+
 ```typescript
 <AdaptiveCarousel preset="quickBrowse">
   {/* Fast, snappy transitions */}
@@ -3893,6 +4296,7 @@ const dragConstraints = useMemo(() => {
 ```
 
 **Playful:**
+
 ```typescript
 <AdaptiveCarousel preset="playful">
   {/* Bouncy, exaggerated physics */}
@@ -3904,18 +4308,20 @@ const dragConstraints = useMemo(() => {
 #### Enhancement 3: Lazy Loading
 
 **Intersection Observer:**
+
 ```typescript
 <AdaptiveCarousel
   lazyLoad={true}
-  loadBufferSize={2}  // Load 2 items ahead
+  loadBufferSize={2} // Load 2 items ahead
 >
-  {items.map(item => (
+  {items.map((item) => (
     <LazyImage src={item.imageUrl} />
   ))}
 </AdaptiveCarousel>
 ```
 
 **Progressive Loading:**
+
 - Low-res placeholder first
 - High-res when in viewport
 - Unload items far from view
@@ -3925,36 +4331,27 @@ const dragConstraints = useMemo(() => {
 #### Enhancement 4: Advanced Layout Modes
 
 **Variable Width:**
+
 ```typescript
-<AdaptiveCarousel
-  variableWidth={true}
-  itemWidths={[200, 300, 200, 250]}
-/>
+<AdaptiveCarousel variableWidth={true} itemWidths={[200, 300, 200, 250]} />
 ```
 
 **Masonry:**
+
 ```typescript
-<AdaptiveCarousel
-  layout="masonry"
-  columns={3}
-  gap={16}
-/>
+<AdaptiveCarousel layout="masonry" columns={3} gap={16} />
 ```
 
 **Centered Mode:**
+
 ```typescript
-<AdaptiveCarousel
-  centeredMode={true}
-  sidePadding={60}
-/>
+<AdaptiveCarousel centeredMode={true} sidePadding={60} />
 ```
 
 **Free Scroll (No Snap):**
+
 ```typescript
-<AdaptiveCarousel
-  freeScroll={true}
-  momentum={true}
-/>
+<AdaptiveCarousel freeScroll={true} momentum={true} />
 ```
 
 ---
@@ -3962,27 +4359,29 @@ const dragConstraints = useMemo(() => {
 #### Enhancement 5: Analytics Integration
 
 **Gesture Metrics:**
+
 ```typescript
 <AdaptiveCarousel
   onGesture={(type, metrics) => {
-    analytics.track('carousel_gesture', {
+    analytics.track("carousel_gesture", {
       type,
       distance: metrics.distance,
       velocity: metrics.velocity,
-      duration: metrics.duration
-    })
+      duration: metrics.duration,
+    });
   }}
 />
 ```
 
 **Engagement Tracking:**
+
 ```typescript
 <AdaptiveCarousel
   onCardView={(index, timeSpent) => {
-    analytics.track('carousel_card_view', { index, timeSpent })
+    analytics.track("carousel_card_view", { index, timeSpent });
   }}
   onComplete={() => {
-    analytics.track('carousel_completed')
+    analytics.track("carousel_completed");
   }}
 />
 ```
@@ -3992,9 +4391,10 @@ const dragConstraints = useMemo(() => {
 #### Enhancement 6: Developer Experience
 
 **Debug Mode:**
+
 ```typescript
 <AdaptiveCarousel
-  debug={true}  // Shows gesture overlay
+  debug={true} // Shows gesture overlay
   debugPanel="bottom"
 />
 
@@ -4006,17 +4406,19 @@ const dragConstraints = useMemo(() => {
 ```
 
 **Storybook Integration:**
+
 - Interactive prop playground
 - All combinations tested
 - Visual regression suite
 
 **Performance Monitor:**
+
 ```typescript
 <AdaptiveCarousel
   performanceMonitor={true}
   fpsTarget={60}
   onPerformanceIssue={(metric) => {
-    console.warn('Performance issue:', metric)
+    console.warn("Performance issue:", metric);
   }}
 />
 ```
@@ -4030,6 +4432,7 @@ const dragConstraints = useMemo(() => {
 **Question:** Is current 4-tier system optimal, or can we improve with different thresholds?
 
 **Approach:**
+
 - A/B test alternative threshold sets
 - Measure false positive/negative rates
 - User preference surveys
@@ -4043,12 +4446,14 @@ const dragConstraints = useMemo(() => {
 **Question:** What accuracy can ML achieve, and is it worth the complexity?
 
 **Approach:**
+
 - Train Random Forest on 1000+ labeled swipes
 - Test Neural Net approach
 - Compare accuracy vs current system
 - Measure inference time
 
 **Decision Criteria:**
+
 - Must achieve > 95% accuracy
 - Inference < 10ms
 - Model size < 1MB
@@ -4061,12 +4466,14 @@ const dragConstraints = useMemo(() => {
 **Question:** How much does per-user calibration improve accuracy?
 
 **Approach:**
+
 - Track user's swipe patterns over time
 - Adjust thresholds dynamically
 - Measure accuracy improvement
 - Test with diverse user groups
 
 **Implementation Ideas:**
+
 - Store user profile in localStorage
 - Update thresholds after 20-30 swipes
 - Decay old patterns over time
@@ -4078,6 +4485,7 @@ const dragConstraints = useMemo(() => {
 **Question:** Can we use context to improve classification?
 
 **Factors to Consider:**
+
 - Previous gesture (flick → flick more likely)
 - Animation state (mid-animation → user changing mind)
 - Time since last gesture
@@ -4090,21 +4498,25 @@ const dragConstraints = useMemo(() => {
 ### Contribution Opportunities
 
 **Documentation:**
+
 - Video tutorials (YouTube, Loom)
 - Interactive examples (CodeSandbox)
 - Translation to other languages
 
 **Testing:**
+
 - Cross-browser automation
 - Device lab testing (iOS, Android)
 - Accessibility audit
 
 **Examples:**
+
 - Real-world implementation gallery
 - Templates for common use cases
 - Integration guides (Next.js, Gatsby, etc.)
 
 **Integrations:**
+
 - Vue wrapper component
 - Svelte adapter
 - Angular directive
@@ -4117,30 +4529,32 @@ const dragConstraints = useMemo(() => {
 ### APPENDIX A: File Structure
 
 **Monolithic Version (v1.1.0):**
+
 ```
 AdaptiveCarousel.1.1.0.tsx
 ```
 
 **Modular Version (v0.4.0):**
+
 ```
 /src/
   /Components/
     /Carousel/
       AdaptiveCarousel-Modular.v0.4.0.tsx
-      
+
       /Hooks/
         useCarouselDimensions.ts
         useCarouselNavigation.ts
         useCarouselGestures.ts
         useCarouselKeyboard.ts
         index.ts
-      
+
       /Utils/
         gestureDetection.ts
         animationConfig.ts
         layoutCalculations.ts
         iconUtils.ts
-      
+
       /Versions/
         AdaptiveCarousel.v0.1.0.js
         AdaptiveCarousel.v0.1.1.js
@@ -4157,19 +4571,19 @@ AdaptiveCarousel.1.1.0.tsx
 
 ### APPENDIX B: Version History Table
 
-| Version | Date | Key Changes | Status |
-|---------|------|-------------|--------|
-| v0.1.0 | Oct 24 | Initial implementation | Deprecated |
-| v0.1.1 | Oct 24 | Velocity alignment fix | Deprecated |
-| v0.1.2 | Oct 24 | Two-step animation | Deprecated |
-| v0.1.3 | Oct 24 | Animation refinement | Deprecated |
-| v0.2.0 | Oct 24 | 4-tier detection (93.25%) | Deprecated |
-| v0.3.0 | Oct 25 | Animation separation (flick/glide) | Deprecated |
-| v0.3.1 | Oct 26 | Polish & stability | Deprecated |
-| v1.0.0 | Oct 28 | TypeScript migration | Deprecated |
-| v1.0.1 | Oct 29 | Jump cap (max 3) | Deprecated |
-| **v1.1.0** | **Oct 30** | **Current version (monolithic)** | **✅ Production** |
-| v0.4.0 | Oct 30 | Modular architecture | Reference |
+| Version    | Date       | Key Changes                        | Status            |
+| ---------- | ---------- | ---------------------------------- | ----------------- |
+| v0.1.0     | Oct 24     | Initial implementation             | Deprecated        |
+| v0.1.1     | Oct 24     | Velocity alignment fix             | Deprecated        |
+| v0.1.2     | Oct 24     | Two-step animation                 | Deprecated        |
+| v0.1.3     | Oct 24     | Animation refinement               | Deprecated        |
+| v0.2.0     | Oct 24     | 4-tier detection (93.25%)          | Deprecated        |
+| v0.3.0     | Oct 25     | Animation separation (flick/glide) | Deprecated        |
+| v0.3.1     | Oct 26     | Polish & stability                 | Deprecated        |
+| v1.0.0     | Oct 28     | TypeScript migration               | Deprecated        |
+| v1.0.1     | Oct 29     | Jump cap (max 3)                   | Deprecated        |
+| **v1.1.0** | **Oct 30** | **Current version (monolithic)**   | **✅ Production** |
+| v0.4.0     | Oct 30     | Modular architecture               | Reference         |
 
 ---
 
@@ -4198,6 +4612,7 @@ AdaptiveCarousel.1.1.0.tsx
 | Caitlin | 208 | 254 | 63 | 65.5 |
 
 **Overall Statistics:**
+
 ```
 FLICKS:
   Median Velocity: 123 px/s
@@ -4222,6 +4637,7 @@ SEPARATION:
 ### APPENDIX D: Cross-References
 
 **For Session Details:**
+
 - Session 01 (Oct 27): [Carousel_01.md] - Layout gaps fix, children sizing
 - Session 02 (Nov 2): [Carousel_02.md] - Animation refinement, cushioning
 - Session 04 (Nov 2): [Carousel_04.md] - CSV analysis, threshold optimization
@@ -4229,11 +4645,13 @@ SEPARATION:
 - Session 07 (Nov 3): [Carousel_07.md] - Architecture clarification
 
 **For Code Examples:**
+
 - Complete component: `AdaptiveCarousel.1.1.0.tsx`
 - Modular version: `AdaptiveCarousel-Modular.v0.4.0.tsx`
 - Gesture detection: `Utils/gestureDetection.ts`
 
 **For API Documentation:**
+
 - Props reference: [Section 7](#section-7-complete-api-reference)
 - Animation controls: [Section 6](#section-6-animation-system)
 - Accessibility: [Section 11](#section-11-accessibility-implementation)
@@ -4249,9 +4667,10 @@ SEPARATION:
 **Component Version:** v1.1.0 (Monolithic)  
 **Source:** Claude chat sessions in DesignSystem project  
 **Total Lines:** 1800+  
-**Sections:** 13 main + 4 appendices  
+**Sections:** 13 main + 4 appendices
 
 **Contributors:**
+
 - Primary Development: DesignSystem project chats
 - User Testing: Felix, Pierre, Hani, Ben, Max, Caitlin
 - Documentation: Claude (consolidated from sessions)
@@ -4273,23 +4692,22 @@ Only concise summaries or diffs are stored here — not full session transcripts
 
 **Relevant Sections Updated:** (Add manually if needed)
 
-**Key Additions:**
----
+## **Key Additions:**
+
 **Objective:** Generate unified `Carousel_MASTER.md` from all session notes
 **Process:**
+
 - Searched project knowledge for all carousel documentation
 - Consolidated development history from v0.1.x through v1.1.0
 - Organized chronologically with thematic sections
-**Sections Created:**
+  **Sections Created:**
 - **Version Evolution:** Complete changelog with rationale
 - **Core Systems:** Gesture detection, animation, keyboard navigation
 - **Problem-Solution Pairs:** Key fixes and their context
 
 ---
 
-
-
-## Carousel_08_04112025.md — 
+## Carousel_08_04112025.md —
 
 **Summary:** Automatic summary from `Carousel_08.md`.
 
@@ -4299,17 +4717,19 @@ Only concise summaries or diffs are stored here — not full session transcripts
 **Date:** November 4, 2025  
 **Focus:** Two-column glide detection struggles  
 **Type:** Bug investigation and context retrieval
+
 ---
+
 ---
+
 **User Report:**
+
 - Currently working on AdaptiveCarousel.1.1.1
 - Experiencing significant difficulty performing glides in two-column mode
 - User noted this struggle has been documented in previous Markdown files
-**Context:**
+  **Context:**
 
 ---
-
-
 
 ## Carousel_09_04112025.md — 09/041120
 
@@ -4322,26 +4742,24 @@ Only concise summaries or diffs are stored here — not full session transcripts
 **Focus:** Biomechanical analysis of carousel interaction failure (small hands, high screen position)  
 **Type:** Bug investigation & ergonomic root cause analysis  
 **Component Version:** AdaptiveCarousel.1.0.2
----
----
-- **Device:** iPhone  
-- **User Profile:** "Jo" - small hands  
-- **Scenario:** Carousel positioned high on screen, one-handed phone grip at bottom  
-- **Behavior:** Consistent failure to trigger carousel gestures → page scrolls instead  
 
 ---
 
 ---
 
-## #Carousel_10_06112025.md — 10 — 10
+- **Device:** iPhone
+- **User Profile:** "Jo" - small hands
+- **Scenario:** Carousel positioned high on screen, one-handed phone grip at bottom
+- **Behavior:** Consistent failure to trigger carousel gestures → page scrolls instead
 
-**Summary:** Automatic summary from `Session_Integration_10.md`.
+---
 
-**Relevant Sections Updated:** (Add manually if needed)
+## Carousel_10_06112025.md — 10
 
-**Key Additions:**
 **Summary:** Automatic summary from `Carousel_10.md`.
+
 **Relevant Sections Updated:** (Add manually if needed)
+
 **Key Additions:**
 **Date:** November 6, 2025
 **Focus:** Session initialization, project context loading, and documentation protocol verification
@@ -4350,9 +4768,32 @@ Only concise summaries or diffs are stored here — not full session transcripts
 **Session Duration:** ~10 minutes
 ---
 **Primary Goal:** Verify the Project Context Loading Protocol is working correctly and confirm the session summary template for future documentation.
+**Context from Previous Sessions:**
+- Session 08 (Nov 4): Two-column glide detection investigation initiated
+- Session 09 (Nov 4): Biomechanical analysis of carousel interaction failures (small hands, high screen position)
+
+---
+
+## Carousel_10_06112025.md — 10
+
+**Summary:** Automatic summary from `Carousel_10.md`.
+
+**Relevant Sections Updated:** (Add manually if needed)
+
+**Key Additions:**
+**Date:** November 6, 2025
+**Focus:** Session initialization, project context loading, and documentation protocol verification
+**Type:** Process verification / Documentation setup
+**Component Version:** v1.0.2 (Monolithic)
+**Session Duration:** ~10 minutes
+---
+**Primary Goal:** Verify the Project Context Loading Protocol is working correctly and confirm the session summary template for future documentation.
+**Context from Previous Sessions:**
+- Session 08 (Nov 4): Two-column glide detection investigation initiated
+- Session 09 (Nov 4): Biomechanical analysis of carousel interaction failures (small hands, high screen position)
 
 ---
 
 **END OF MASTER DOCUMENTATION**
 
-*This document consolidates all carousel development knowledge from October 24 - November 3, 2025, based on chat message logs (source of truth), CSV data analysis, and session markdown cross-references.*
+_This document consolidates all carousel development knowledge from October 24 - November 3, 2025, based on chat message logs (source of truth), CSV data analysis, and session markdown cross-references._
