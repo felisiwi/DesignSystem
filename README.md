@@ -32,3 +32,4 @@ This design system is structured as a component library built with React and Typ
 - **[COMPONENTS.md](./COMPONENTS.md)** - Auto-generated component registry with latest versions
 - **[PROJECT_NOTES.md](./PROJECT_NOTES.md)** - Component index and project context
 - **[README.md](./README.md)** - This file (project overview)
+- **[README_WORKFLOW_AUTOMATION.md](./README_WORKFLOW_AUTOMATION.md)** - Complete automation guide (commands, workflows, troubleshooting)

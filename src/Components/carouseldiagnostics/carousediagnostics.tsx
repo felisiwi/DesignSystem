@@ -103,9 +103,10 @@ interface MiniCarouselProps {
   columns: 1 | 2
   onGestureComplete: (data: Partial<GestureData>) => void
   isActive: boolean
+  hasMotionPermission: boolean
 }
 
-const MiniCarousel: React.FC<MiniCarouselProps> = ({ columns, onGestureComplete, isActive }) => {
+const MiniCarousel: React.FC<MiniCarouselProps> = ({ columns, onGestureComplete, isActive, hasMotionPermission }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemWidth, setItemWidth] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -148,8 +149,14 @@ const MiniCarousel: React.FC<MiniCarouselProps> = ({ columns, onGestureComplete,
     return () => window.removeEventListener('resize', updateDimensions)
   }, [columns])
   
-  // Device motion tracking
+  // Device motion tracking - only starts after permission granted
   useEffect(() => {
+    if (!hasMotionPermission) {
+      // Clear data if permission revoked
+      deviceMotionData.current = []
+      return
+    }
+    
     const handleMotion = (event: DeviceMotionEvent) => {
       if (event.accelerationIncludingGravity) {
         deviceMotionData.current.push({
@@ -167,7 +174,7 @@ const MiniCarousel: React.FC<MiniCarouselProps> = ({ columns, onGestureComplete,
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [])
+  }, [hasMotionPermission]) // Re-run when permission changes
   
   const handleDragStart = () => {
     dragStartTime.current = Date.now()
@@ -1481,11 +1488,13 @@ export default function CarouselSwipeDiagnostic() {
             columns={1}
             onGestureComplete={(data) => handleGestureComplete('1-column', data)}
             isActive={phase !== 'interstitial'}
+            hasMotionPermission={permissionsGranted.motion}
           />
           <MiniCarousel
             columns={2}
             onGestureComplete={(data) => handleGestureComplete('2-column', data)}
             isActive={phase !== 'interstitial'}
+            hasMotionPermission={permissionsGranted.motion}
           />
         </div>
         
