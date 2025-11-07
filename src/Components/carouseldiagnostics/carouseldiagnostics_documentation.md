@@ -459,7 +459,7 @@ window.devicePixelRatio
 - GitHub Personal Access Token integration
 - Repository specification (owner/repo)
 - Automatic commit with timestamp
-- File pushed to `/Data/swipe_diagnostics/` directory
+- File pushed to `/Data/carousel_diagnostics/raw_data/` directory (for carousel-specific tests) or `/Data/swipe_diagnostics/raw_data/` (for general swipe tests)
 
 **Implementation Approach:**
 ```typescript
@@ -470,7 +470,7 @@ window.devicePixelRatio
 // After test:
 async function uploadToGitHub(csvContent: string, filename: string) {
   const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/Data/swipe_diagnostics/${filename}`,
+    `https://api.github.com/repos/${owner}/${repo}/contents/Data/carousel_diagnostics/raw_data/${filename}`,
     {
       method: 'PUT',
       headers: {

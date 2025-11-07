@@ -2,7 +2,7 @@
 
 > **Auto-generated**: This file is automatically updated by `Scripts/update_all_component_versions.js`
 
-> **Last Updated**: 2025-11-06
+> **Last Updated**: 2025-11-07
 
 ---
 
@@ -48,7 +48,7 @@ Diagnostic tool for analyzing carousel swipe gestures with comprehensive metrics
 
 **Documentation**:
 - [Component Documentation](./src/components/carouseldiagnostics/carouseldiagnostics_documentation.md)
-- [Analysis Results](./Data/swipe_diagnostics/CarouselDiagnostics_analysis.md)
+- [Analysis Results](./Data/carousel_diagnostics/CarouselDiagnostics_analysis.md)
 
 ---
 

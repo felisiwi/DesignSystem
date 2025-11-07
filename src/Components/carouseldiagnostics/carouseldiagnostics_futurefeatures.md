@@ -92,7 +92,7 @@ async function uploadToGitHub(
   config: GitHubConfig
 ): Promise<{ success: boolean; message: string; url?: string }> {
   try {
-    const path = `Data/swipe_diagnostics/${filename}`
+    const path = `Data/carousel_diagnostics/raw_data/${filename}` // For carousel tests, or Data/swipe_diagnostics/raw_data/ for general tests
     const encodedContent = btoa(csvContent)
     
     const response = await fetch(

@@ -7,6 +7,7 @@
 ## Quick Navigation
 
 **Main Sections:**
+
 - [Directional Lock Analysis](#directional-lock-analysis)
 - [Key Metrics from CSV Analysis](#key-metrics-from-csv-analysis)
 - [Advanced Pattern Analysis](#advanced-pattern-analysis)
@@ -18,16 +19,37 @@
 - [User Pattern Insights](#user-pattern-insights)
 - [Composite Insights & Recommendations](#composite-insights--recommendations)
 - [Future Analysis Areas](#future-analysis-areas)
+- [Related Analysis Documents](#related-analysis-documents)
 
 ---
 
 ## Document Structure
 
 This document is organized by:
+
 - **Analysis Type** (e.g., Directional Lock, Gesture Detection, User Patterns)
 - **Date/Version** of analysis
 - **Data Sources** (CSV files, user testing sessions)
 - **Key Findings** and **Recommendations**
+
+---
+
+## Related Analysis Documents
+
+This document focuses on **directional lock** and **gesture detection patterns** from general swipe diagnostics. For related analysis on specific carousel issues, see:
+
+- **[CarouselDiagnostics_analysis.md](carousel_diagnostics/CarouselDiagnostics_analysis.md)** - 2-column animation physics issue (velocity compensation gap, stiffness/damping tuning). Analyzes gesture-type specific problems (flicks vs glides) and position-independent validation. Based on enhanced diagnostic tool (v2.0.1) with comprehensive metrics.
+
+- **[SwipeDiagnostics_analysis.md](swipe_diagnostics/SwipeDiagnostics_analysis.md)** - Analysis of basic swipe diagnostics (v1.0 format). Covers general gesture patterns from the initial diagnostic tool with 20 metrics per swipe.
+
+- **[Carousel_MASTER.md](../notes/claude-sessions/Carousel/Carousel_MASTER.md)** - Complete component documentation and development history, including implementation details and API reference.
+
+**Note:** These documents complement each other:
+
+- **This document** = General gesture patterns and directional lock algorithms
+- **CarouselDiagnostics_analysis.md** = Specific animation physics tuning for 2-column layouts (enhanced diagnostics)
+- **SwipeDiagnostics_analysis.md** = Basic swipe pattern analysis (initial diagnostics)
+- **Carousel_MASTER.md** = Complete component reference and implementation guide
 
 ---
 
@@ -40,6 +62,7 @@ This document is organized by:
 **Problem:** Carousel and page scroll responding simultaneously during swipe gestures, creating "sliding around" feeling.
 
 **Occurrence Pattern:**
+
 - More frequent when carousel positioned high on screen
 - Affects both 1-column and 2-column configurations
 - Works better with controlled swipes, but fails frequently with natural swipes
@@ -53,16 +76,18 @@ This document is organized by:
 **Approach:** Pure angle-based directional lock (industry standard)
 
 **Implementation:**
+
 ```typescript
 if (angle < 30) {
-  setDirectionLock('horizontal')  // Lock to carousel
+  setDirectionLock("horizontal"); // Lock to carousel
 } else if (angle > 60) {
-  setDirectionLock('vertical')    // Allow page scroll
+  setDirectionLock("vertical"); // Allow page scroll
 }
 // 30-60° = NO LOCK (dead zone)
 ```
 
 **Root Cause Identified:**
+
 - **30-60° Dead Zone Problem:** When swipe angle falls between 30-60°:
   - `directionLock` stays `null`
   - `event.preventDefault()` is never called
@@ -71,12 +96,14 @@ if (angle < 30) {
   - **Both systems respond simultaneously** ← This is exactly what Jo experiences
 
 **Why This Happens More With High Carousels:**
+
 - Initial touch angle naturally ~30-45° (the "reaching arc")
 - Falls into dead zone - no lock is set
 - Both systems respond for entire gesture
 - Creates "sliding around" feeling
 
 **Why Controlled Swipes Work Better:**
+
 - More horizontal (angle < 30°) → lock succeeds
 - Longer duration → angle corrects over time
 - Less "reaching" motion → starts in valid angle range
@@ -86,6 +113,7 @@ if (angle < 30) {
 ### Data-Driven Analysis (180 Swipes from 6 Users)
 
 **Dataset:**
+
 - Felix: 30 swipes (controlled, low Y movement: 4-26px)
 - Pierre: 30 swipes (energetic, low Y movement: 4-32px)
 - Hani: 30 swipes (inverted pattern, moderate Y movement: 14-28px)
@@ -94,12 +122,14 @@ if (angle < 30) {
 - Caitlin: 30 swipes (balanced, moderate Y movement: 11-64px)
 
 **Angle Calculation Method:**
+
 ```python
 horizontal = sqrt(Distance² - Y_Movement²)
 angle = atan2(Y_Movement, horizontal) * 180 / π
 ```
 
 **Success Criteria:**
+
 - **Success:** Lock sets to 'horizontal' (prevents simultaneous scrolling)
 - **Failure:** Stays in dead zone (both scroll) OR locks to 'vertical'
 
@@ -110,11 +140,13 @@ angle = atan2(Y_Movement, horizontal) * 180 / π
 #### Approach 1: Current (v1.0.2) - Pure Angle-Based
 
 **Implementation:**
+
 - Immediate angle evaluation
 - 30-60° dead zone (no lock)
 - No forced decision mechanism
 
 **Results:**
+
 - **Overall Success Rate: 68-72%**
 - Swipes with angle < 30°: Locks immediately ✅
 - Swipes with angle 30-60°: Dead zone (failure - both scroll) ❌
@@ -137,6 +169,7 @@ angle = atan2(Y_Movement, horizontal) * 180 / π
 #### Approach 2: Progressive Dead Zone Narrowing
 
 **Implementation:**
+
 ```typescript
 // Progressive narrowing:
 // 0-15px: Dead zone 30-60°
@@ -146,6 +179,7 @@ angle = atan2(Y_Movement, horizontal) * 180 / π
 ```
 
 **Results:**
+
 - **Overall Success Rate: 92-95%**
 - Angle < 30°: Locks immediately ✅
 - Angle 30-60°: Gets time to clarify, forced decision at 50px ✅
@@ -162,11 +196,13 @@ angle = atan2(Y_Movement, horizontal) * 180 / π
 | Caitlin | ~94% | +24% |
 
 **Pros:**
+
 - Very forgiving for ambiguous gestures
 - Multiple chances to clarify
 - Still allows immediate lock for clear angles
 
 **Cons:**
+
 - More complex code (multiple thresholds)
 - Slower resolution (up to 50px wait)
 - More tuning required (3 thresholds: 15, 30, 50)
@@ -176,6 +212,7 @@ angle = atan2(Y_Movement, horizontal) * 180 / π
 #### Approach 3: Simple Forced Decision (Recommended)
 
 **Implementation:**
+
 ```typescript
 // 3px buffer + forced decision at 25px
 if (totalDistance < 3) return  // Buffer
@@ -189,6 +226,7 @@ else if (totalDistance > 25) {
 ```
 
 **Results:**
+
 - **Overall Success Rate: 94-97%** ⭐ **HIGHEST**
 - Angle < 30°: Locks immediately ✅
 - Angle 30-60°: Forced decision at 25px ✅
@@ -205,6 +243,7 @@ else if (totalDistance > 25) {
 | Caitlin | ~96% | +26% |
 
 **Pros:**
+
 - ⭐ **Highest success rate** (94-97%)
 - ⭐ **Fastest resolution** (25px vs 50px)
 - ⭐ **Simplest code** (1 threshold vs 3)
@@ -212,6 +251,7 @@ else if (totalDistance > 25) {
 - ⭐ **Best for edge cases** (Ben, Max see largest improvements)
 
 **Cons:**
+
 - Less forgiving than progressive (single forced decision point)
 
 ---
@@ -223,6 +263,7 @@ else if (totalDistance > 25) {
 **Implementation:** v1.0.3
 
 **Why This Approach:**
+
 1. **Highest success rate** across all users
 2. **Faster resolution** (25px vs 50px) - reduces simultaneous scrolling duration
 3. **Simpler code** - easier to maintain and debug
@@ -230,6 +271,7 @@ else if (totalDistance > 25) {
 5. **Best for edge cases** - users with high Y movement (Ben, Max) see largest improvements
 
 **Expected Outcome:**
+
 - ✅ Jo's swipes will lock to horizontal after ~25px of movement
 - ✅ Page scroll blocked during carousel interaction
 - ✅ Vertical scrolls still work (lock to vertical after 25px)
@@ -242,21 +284,25 @@ else if (totalDistance > 25) {
 ### Why the Initial 20px Buffer Solution Was Rejected
 
 **Proposed Solution:**
+
 - 20px minimum movement threshold before evaluating direction lock
 - Wait 20px before calculating angle
 
 **Why This Was Wrong:**
 
 1. **Contradicted Documentation:**
+
    - Documentation explicitly rejected 10px buffer (causes page scroll delay)
    - 20px is **twice** the rejected threshold
    - Causes the exact problem documentation wanted to avoid
 
 2. **Reintroduced the Problem:**
+
    - Page scrolls during 20px wait (40-60ms delay)
    - Documentation: "Page scrolls during wait before lock" was the problem being solved
 
 3. **Misdiagnosed Root Cause:**
+
    - Suggested solution assumed: "angle evaluated too early"
    - Actual problem: "dead zone never resolves"
    - Solution should fix the dead zone, not delay evaluation
@@ -266,6 +312,7 @@ else if (totalDistance > 25) {
    - 20px buffer adds 40-60ms delay (⭐⭐ speed rating)
 
 **Better Solution:**
+
 - Keep immediate evaluation for clear angles (< 30° or > 60°)
 - Add forced decision mechanism for ambiguous angles (30-60°)
 - This fixes the dead zone without reintroducing scrolling delay
@@ -275,16 +322,19 @@ else if (totalDistance > 25) {
 ## Key Metrics from CSV Analysis
 
 ### Distance Distribution (180 Swipes)
+
 - **Flicks:** Median 100px, Range 38-289px
 - **Glides:** Median 222px, Range 46-358px
 - **Separation:** 122px clear difference
 
 ### Y Movement Distribution
+
 - **Flicks:** Median ~18px, Range 0-90px
 - **Glides:** Median ~23px, Range 0-117px
 - **Straightness:** Median 87%, Range 61-100%
 
 ### Angle Distribution (Calculated)
+
 - **Horizontal (< 30°):** ~70% of swipes
 - **Dead Zone (30-60°):** ~25% of swipes ← **This is the problem**
 - **Vertical (> 60°):** ~5% of swipes
@@ -301,36 +351,43 @@ else if (totalDistance > 25) {
 
 **When adding a new insight, follow this structure:**
 
-```markdown
+````markdown
 ### NEW INSIGHT X: [Descriptive Title]
 
 **Discovery:** [Brief description of what was discovered - 1-2 sentences]
 
 **Analysis Method:**
+
 - [How the analysis was performed - specific steps or techniques]
 - [Data sources used]
 - [Statistical methods if applicable]
 
 **Findings:**
+
 - [Data tables, statistics, or visualizations]
 - [Key numbers and percentages]
 - [Comparisons between groups]
 
 **Key Insight:**
+
 - [Main takeaway - what does this mean?]
 - [Why this matters for implementation]
 
 **Implication for Design:**
+
 - [What this means for the carousel component]
 - [How this affects user experience]
 - [What changes should be considered]
 
 **Proposed Enhancement:**
+
 ```typescript
 // Code example if applicable
 // Show how this insight could be implemented
 ```
-```
+````
+
+````
 
 **Important:** Always include all sections above, even if some are brief. This ensures consistency and makes it easy for AI tools to understand and reference the insight.
 
@@ -357,7 +414,7 @@ else if (totalDistance > 25) {
 | Max | -10% (improved) | +4% (improved) | Learns quickly |
 | Caitlin | -18% (improved) | +6% (improved) | Steady improvement |
 
-**Key Insight:** 
+**Key Insight:**
 - **5 out of 6 users** show improvement over time
 - **Ben shows largest improvement** (28% reduction in Y movement) - suggests high-variance users can learn to be more consistent
 - **Hani's regression** indicates possible fatigue effect or intentional exploration of gesture boundaries
@@ -463,7 +520,7 @@ else if (totalDistance > 25) {
 // Velocity-adjusted buffer
 const buffer = velocity > 200 ? 15 : velocity > 100 ? 20 : 25
 if (totalDistance < buffer) return
-```
+````
 
 ---
 
@@ -472,42 +529,48 @@ if (totalDistance < buffer) return
 **Discovery:** The Peak/Avg velocity ratio predicts whether a swipe will land in the dead zone.
 
 **Analysis Method:**
+
 - Calculated angle for all swipes
 - Compared Peak/Avg Ratio for swipes in dead zone vs clear angles
 
 **Findings:**
 
-| Angle Range | Median Peak/Avg Ratio | Variance |
-|-------------|----------------------|----------|
-| < 30° (clear horizontal) | 1.65 | Low (0.15 stdev) |
-| 30-60° (dead zone) | 1.92 | **High (0.28 stdev)** |
-| > 60° (clear vertical) | 1.78 | Medium (0.20 stdev) |
+| Angle Range              | Median Peak/Avg Ratio | Variance              |
+| ------------------------ | --------------------- | --------------------- |
+| < 30° (clear horizontal) | 1.65                  | Low (0.15 stdev)      |
+| 30-60° (dead zone)       | 1.92                  | **High (0.28 stdev)** |
+| > 60° (clear vertical)   | 1.78                  | Medium (0.20 stdev)   |
 
 **Key Finding:**
+
 - Dead zone swipes have **highest variance** in Peak/Avg Ratio
 - **Ratio > 2.0 = 65% chance of dead zone**
 - **Ratio < 1.5 = 85% chance of clear lock**
 
 **What This Means:**
+
 - High Peak/Avg Ratio = **inconsistent velocity** = uncertain direction
 - Low Peak/Avg Ratio = **steady velocity** = confident direction
 
 **Implication for Directional Lock:**
+
 - Can use Peak/Avg Ratio as **confidence signal**
 - High ratio → wait longer before locking (ambiguous intent)
 - Low ratio → lock immediately (clear intent)
 
 **Proposed Enhancement:**
+
 ```typescript
 // Confidence-based locking
-const peakAvgRatio = peakVelocity / avgVelocity
-const confidence = peakAvgRatio < 1.5 ? 'high' : peakAvgRatio > 2.0 ? 'low' : 'medium'
+const peakAvgRatio = peakVelocity / avgVelocity;
+const confidence =
+  peakAvgRatio < 1.5 ? "high" : peakAvgRatio > 2.0 ? "low" : "medium";
 
-if (confidence === 'high' && totalDistance > 15) {
+if (confidence === "high" && totalDistance > 15) {
   // Lock early for confident swipes
-} else if (confidence === 'low' && totalDistance < 35) {
+} else if (confidence === "low" && totalDistance < 35) {
   // Wait longer for uncertain swipes
-  return
+  return;
 }
 ```
 
@@ -518,41 +581,46 @@ if (confidence === 'high' && totalDistance > 15) {
 **Discovery:** Swipes shorter than 60ms are almost always clear horizontal intent.
 
 **Analysis Method:**
+
 - Analyzed relationship between Duration and Angle
 - Found strong correlation for very short swipes
 
 **Findings:**
 
 | Duration Range | % in Dead Zone | % Clear Horizontal |
-|----------------|----------------|-------------------|
-| < 40ms | 8% | 89% |
-| 40-60ms | 12% | 82% |
-| 60-100ms | 28% | 65% |
-| > 100ms | 35% | 52% |
+| -------------- | -------------- | ------------------ |
+| < 40ms         | 8%             | 89%                |
+| 40-60ms        | 12%            | 82%                |
+| 60-100ms       | 28%            | 65%                |
+| > 100ms        | 35%            | 52%                |
 
 **Key Insight:**
+
 - **Short duration = clear intent**
 - **Long duration = more ambiguous** (user is correcting/adjusting)
 
 **Why This Matters:**
+
 - Very quick swipes (<60ms) are **decisive gestures**
 - Longer swipes (>100ms) include **course corrections** that add Y movement
 - Current system doesn't consider duration at all
 
 **Implication for Directional Lock:**
+
 - **Quick swipes should lock immediately** (even at 10px)
 - **Slow swipes need more buffer** (wait 25-30px)
 
 **Proposed Enhancement:**
+
 ```typescript
 // Duration-adjusted locking
-const duration = Date.now() - dragStartTime.current
+const duration = Date.now() - dragStartTime.current;
 
 if (duration < 60 && totalDistance > 10) {
   // Quick decisive gesture - lock immediately
-  const angle = calculateAngle(info)
-  if (angle < 35) setDirectionLock('horizontal')  // Slightly more lenient
-  else if (angle > 55) setDirectionLock('vertical')
+  const angle = calculateAngle(info);
+  if (angle < 35) setDirectionLock("horizontal"); // Slightly more lenient
+  else if (angle > 55) setDirectionLock("vertical");
 }
 ```
 
@@ -563,39 +631,43 @@ if (duration < 60 && totalDistance > 10) {
 **Discovery:** Straightness % below 80% almost always indicates dead zone swipe.
 
 **Analysis Method:**
+
 - Correlated Straightness % with angle categories
 - Found clear threshold
 
 **Findings:**
 
 | Straightness % | % Clear Horizontal | % Dead Zone | % Vertical |
-|----------------|-------------------|-------------|------------|
-| > 90% | 85% | 12% | 3% |
-| 80-90% | 72% | 25% | 3% |
-| 70-80% | 48% | 42% | 10% |
-| < 70% | 25% | 38% | 37% |
+| -------------- | ------------------ | ----------- | ---------- |
+| > 90%          | 85%                | 12%         | 3%         |
+| 80-90%         | 72%                | 25%         | 3%         |
+| 70-80%         | 48%                | 42%         | 10%        |
+| < 70%          | 25%                | 38%         | 37%        |
 
 **Key Insight:**
+
 - **Straightness < 80% = high dead zone risk**
 - Can be calculated in real-time during drag
 - Provides early warning of problematic swipe
 
 **Implication:**
+
 - Calculate straightness during drag
 - If trending below 80%, increase buffer requirement
 - Can provide haptic feedback for very crooked swipes
 
 **Proposed Enhancement:**
+
 ```typescript
 // Real-time straightness monitoring
-const totalDistance = Math.sqrt(info.offset.x**2 + info.offset.y**2)
-const horizontalDistance = Math.abs(info.offset.x)
-const straightness = (horizontalDistance / totalDistance) * 100
+const totalDistance = Math.sqrt(info.offset.x ** 2 + info.offset.y ** 2);
+const horizontalDistance = Math.abs(info.offset.x);
+const straightness = (horizontalDistance / totalDistance) * 100;
 
 if (straightness < 80 && totalDistance > 15) {
   // Crooked swipe - likely heading to dead zone
   // Increase buffer requirement
-  if (totalDistance < 35) return
+  if (totalDistance < 35) return;
 }
 ```
 
@@ -608,13 +680,15 @@ if (straightness < 80 && totalDistance > 15) {
 **Discovery:** There are actually THREE distinct swipe populations - not just flick vs glide.
 
 **Analysis Method:**
+
 - Clustered all swipes based on Distance, Velocity, Y Movement
 - Found natural groupings emerge
 
 **Populations Identified:**
 
 ##### Population 1: "Precision Swipes" (45% of all swipes)
-- **Characteristics:** 
+
+- **Characteristics:**
   - Distance: 50-120px
   - Y Movement: < 20px
   - Straightness: > 85%
@@ -624,6 +698,7 @@ if (straightness < 80 && totalDistance > 15) {
 - **Pattern:** Controlled, intentional, practiced gestures
 
 ##### Population 2: "Natural Swipes" (35% of all swipes)
+
 - **Characteristics:**
   - Distance: 80-250px
   - Y Movement: 20-50px
@@ -634,6 +709,7 @@ if (straightness < 80 && totalDistance > 15) {
 - **Pattern:** Casual, varied, exploratory gestures
 
 ##### Population 3: "Extreme Swipes" (20% of all swipes)
+
 - **Characteristics:**
   - Distance: > 200px OR Velocity > 1000px/s
   - Y Movement: > 40px
@@ -643,11 +719,13 @@ if (straightness < 80 && totalDistance > 15) {
 - **Pattern:** Experimental, frustrated, or rushed gestures
 
 **Key Insight:**
+
 - **Current system optimized for Population 1** (precision swipes)
 - **Populations 2 & 3 need different treatment**
 - Dead zone hits are concentrated in Populations 2 & 3
 
 **Implication:**
+
 - Need **multi-tier locking strategy** based on swipe population
 - Precision swipes → fast lock
 - Natural swipes → moderate buffer
@@ -662,40 +740,44 @@ if (straightness < 80 && totalDistance > 15) {
 **Discovery:** Dead zone swipes show a distinctive "Y acceleration spike" at swipe start.
 
 **Analysis Method:**
+
 - Calculated Y movement in first 20px vs rest of swipe
 - Compared ratios for dead zone vs clear angle swipes
 
 **Findings:**
 
-| Swipe Type | Y in First 20px | Y in Remaining Distance | Ratio |
-|------------|-----------------|------------------------|-------|
-| Clear Horizontal | 30% of total Y | 70% of total Y | 0.43 |
-| Dead Zone | 55% of total Y | 45% of total Y | 1.22 |
-| Clear Vertical | 65% of total Y | 35% of total Y | 1.86 |
+| Swipe Type       | Y in First 20px | Y in Remaining Distance | Ratio |
+| ---------------- | --------------- | ----------------------- | ----- |
+| Clear Horizontal | 30% of total Y  | 70% of total Y          | 0.43  |
+| Dead Zone        | 55% of total Y  | 45% of total Y          | 1.22  |
+| Clear Vertical   | 65% of total Y  | 35% of total Y          | 1.86  |
 
 **Key Insight:**
+
 - Dead zone swipes have **disproportionate Y movement early**
 - This is the "reaching arc" pattern
 - Y movement ratio > 1.0 = strong predictor of dead zone
 
 **Implication:**
+
 - Can detect "reaching arc" pattern by measuring Y distribution
 - If Y movement concentrated in first 15-20px → likely dead zone
 - Can warn system to wait longer before locking
 
 **Proposed Enhancement:**
+
 ```typescript
 // Track Y movement distribution
-const yFirst20px = Math.abs(info.offset.y) // at 20px mark
-const yTotal = Math.abs(info.offset.y)     // current total
+const yFirst20px = Math.abs(info.offset.y); // at 20px mark
+const yTotal = Math.abs(info.offset.y); // current total
 
 if (totalDistance > 20) {
-  const yRatio = yFirst20px / (yTotal || 1)
-  
+  const yRatio = yFirst20px / (yTotal || 1);
+
   if (yRatio > 0.6) {
     // Y-heavy start = likely reaching arc
     // Wait for 30-35px before locking
-    if (totalDistance < 30) return
+    if (totalDistance < 30) return;
   }
 }
 ```
@@ -707,29 +789,33 @@ if (totalDistance > 20) {
 **Discovery:** "Pause Before Release" metric correlates with dead zone probability.
 
 **Analysis Method:**
+
 - Examined relationship between Pause Before Release and angle category
 - Found unexpected pattern
 
 **Findings:**
 
-| Pause Duration | % in Dead Zone | Pattern |
-|----------------|----------------|---------|
-| < 1.5 | 18% | Quick release, clear intent |
-| 1.5-2.0 | 35% | **Dead zone concentrated here** |
-| > 2.0 | 22% | Deliberate hold, usually vertical |
+| Pause Duration | % in Dead Zone | Pattern                           |
+| -------------- | -------------- | --------------------------------- |
+| < 1.5          | 18%            | Quick release, clear intent       |
+| 1.5-2.0        | 35%            | **Dead zone concentrated here**   |
+| > 2.0          | 22%            | Deliberate hold, usually vertical |
 
 **Key Insight:**
+
 - **Pause 1.5-2.0 = highest dead zone risk**
 - This represents **hesitation** before release
 - User is **uncertain** about gesture completion
 
 **Why This Matters:**
+
 - Pause is a **confidence signal**
 - Short pause = decisive
 - Long pause (>2.0) = intentional hold (likely scroll)
 - **Medium pause = ambiguous intent**
 
 **Implication:**
+
 - Can use pause as **meta-signal** for lock confidence
 - Medium pause → increase buffer requirement
 - Very short pause → can lock earlier
@@ -741,6 +827,7 @@ if (totalDistance > 20) {
 **Discovery:** Can model the ergonomic impact of carousel position mathematically.
 
 **Biomechanical Model:**
+
 ```
 Reach Angle = atan2(VerticalReach, HorizontalThumbRange)
 
@@ -754,33 +841,40 @@ Expected angle = atan2(120, 60) = 63°
 ```
 
 **Prediction:**
+
 - **Carousel at top:** Expected starting angle ~63° (vertical lock)
 - **Carousel at middle:** Expected starting angle ~30° (ambiguous)
 - **Carousel at thumb height:** Expected starting angle ~10° (horizontal lock)
 
 **Validation from Jo's Report:**
+
 - ✅ High carousel = most problems (matches 63° prediction - vertical/dead zone)
 - ✅ Middle carousel = works better (matches 30° prediction - borderline)
 - ✅ "Best position" = thumb resting height (matches <30° prediction)
 
 **Implication:**
+
 - **Carousel position should inform lock thresholds**
 - High carousel → more lenient horizontal threshold (35° instead of 30°)
 - Low carousel → can use strict threshold (30°)
 
 **Proposed Enhancement:**
+
 ```typescript
 // Position-aware thresholds
-const carouselY = containerRef.current.getBoundingClientRect().top
-const screenHeight = window.innerHeight
-const position = carouselY / screenHeight
+const carouselY = containerRef.current.getBoundingClientRect().top;
+const screenHeight = window.innerHeight;
+const position = carouselY / screenHeight;
 
 // Adjust thresholds based on position
-const horizontalThreshold = position < 0.3 ? 30 :  // Low position
-                           position < 0.6 ? 35 :  // Mid position
-                           40                     // High position
+const horizontalThreshold =
+  position < 0.3
+    ? 30 // Low position
+    : position < 0.6
+    ? 35 // Mid position
+    : 40; // High position
 
-if (angle < horizontalThreshold) setDirectionLock('horizontal')
+if (angle < horizontalThreshold) setDirectionLock("horizontal");
 ```
 
 ---
@@ -790,22 +884,24 @@ if (angle < horizontalThreshold) setDirectionLock('horizontal')
 ### Multi-Tier System Performance by User
 
 **Current Thresholds (v1.0.2):**
+
 - Tier 1: distance > 170px
 - Tier 2: distance > 140px AND velocity > 120 AND accel > 30
 - Tier 3: distance > 155px AND (velocity > 180 OR accel > 50)
 
 **Success Rates by User:**
 
-| User | Tier 1 Hit Rate | Tier 2 Hit Rate | Tier 3 Hit Rate | Total Glide Detection |
-|------|----------------|----------------|----------------|----------------------|
-| Felix | 25% | 15% | 10% | 50% |
-| Pierre | 45% | 20% | 15% | 80% |
-| Hani | 20% | 10% | 8% | 38% (lowest) |
-| Ben | 35% | 18% | 12% | 65% |
-| Max | 55% | 22% | 18% | 95% (highest) |
-| Caitlin | 30% | 16% | 14% | 60% |
+| User    | Tier 1 Hit Rate | Tier 2 Hit Rate | Tier 3 Hit Rate | Total Glide Detection |
+| ------- | --------------- | --------------- | --------------- | --------------------- |
+| Felix   | 25%             | 15%             | 10%             | 50%                   |
+| Pierre  | 45%             | 20%             | 15%             | 80%                   |
+| Hani    | 20%             | 10%             | 8%              | 38% (lowest)          |
+| Ben     | 35%             | 18%             | 12%             | 65%                   |
+| Max     | 55%             | 22%             | 18%             | 95% (highest)         |
+| Caitlin | 30%             | 16%             | 14%             | 60%                   |
 
 **Analysis:**
+
 - **Tier 1 (distance-only) most reliable** across all users
 - **Tier 2 (multi-signal) catches medium glides** but has strict requirements
 - **Tier 3 (energetic) heavily user-dependent**
@@ -813,6 +909,7 @@ if (angle < horizontalThreshold) setDirectionLock('horizontal')
 - Hani's low detection confirms inverted pattern issues
 
 **Recommendation:**
+
 - Lower Tier 1 threshold for Felix-style users (controlled)
 - Relax Tier 2 velocity requirement (120 → 100)
 - Keep Tier 3 for Max/Pierre style users
@@ -822,18 +919,20 @@ if (angle < horizontalThreshold) setDirectionLock('horizontal')
 ## User Pattern Insights
 
 ### Felix (Controlled Swiper)
+
 - **Characteristics:** Most consistent, clear separation between flick/glide
 - **Y Movement:** Low (4-26px)
 - **Straightness:** High (83-100%)
 - **Learning Curve:** -15% Y movement improvement
 - **Swipe Signature:** Minimalist - low velocity, short distance, very precise
-- **Directional Lock Success:** 
+- **Directional Lock Success:**
   - Current: 85%
   - Simple Forced: 98% (+13%)
 - **Optimal Strategy:** Can use strict thresholds, fast locking, minimal buffer
 - **Population:** 75% Precision Swipes
 
 ### Pierre (Energetic Swiper)
+
 - **Characteristics:** High velocity, long distances
 - **Y Movement:** Low (4-32px)
 - **Straightness:** High (90-97%)
@@ -846,6 +945,7 @@ if (angle < horizontalThreshold) setDirectionLock('horizontal')
 - **Population:** 65% Precision Swipes, 35% Natural Swipes
 
 ### Hani (Inverted Pattern)
+
 - **Characteristics:** Fast flicks, slower glides (unusual pattern)
 - **Y Movement:** Moderate (14-28px)
 - **Straightness:** Variable (68-96%)
@@ -859,6 +959,7 @@ if (angle < horizontalThreshold) setDirectionLock('horizontal')
 - **Special Note:** Represents users who don't follow conventional patterns
 
 ### Ben (Extreme Variance)
+
 - **Characteristics:** Highest variance, unpredictable velocity ranges
 - **Y Movement:** High (6-117px)
 - **Straightness:** Variable (67-97%)
@@ -872,6 +973,7 @@ if (angle < horizontalThreshold) setDirectionLock('horizontal')
 - **Special Note:** Shows largest improvement potential with better system
 
 ### Max (High-Energy)
+
 - **Characteristics:** Consistently fast, peak velocities 2,400+ px/s
 - **Y Movement:** High (9-96px)
 - **Straightness:** Moderate (76-96%)
@@ -884,6 +986,7 @@ if (angle < horizontalThreshold) setDirectionLock('horizontal')
 - **Population:** 50% Natural Swipes, 50% Extreme Swipes
 
 ### Caitlin (Balanced)
+
 - **Characteristics:** Moderate style, good representative of "average" user
 - **Y Movement:** Moderate (11-64px)
 - **Straightness:** Moderate (74-96%)
@@ -933,28 +1036,32 @@ FORCED DECISION (at 35px if still unresolved):
 ### Recommended Multi-Signal Enhancement (v1.0.4+)
 
 ```typescript
-const calculateLockConfidence = (info: PanInfo, totalDistance: number, duration: number) => {
-  const velocity = Math.abs(info.velocity.x)
-  const straightness = (Math.abs(info.offset.x) / totalDistance) * 100
-  
-  let confidence = 0
-  
+const calculateLockConfidence = (
+  info: PanInfo,
+  totalDistance: number,
+  duration: number
+) => {
+  const velocity = Math.abs(info.velocity.x);
+  const straightness = (Math.abs(info.offset.x) / totalDistance) * 100;
+
+  let confidence = 0;
+
   // Positive confidence signals
-  if (velocity > 200) confidence += 2
-  if (duration < 60) confidence += 2
-  if (straightness > 90) confidence += 2
-  if (Math.abs(info.offset.y) < 15) confidence += 1
-  
+  if (velocity > 200) confidence += 2;
+  if (duration < 60) confidence += 2;
+  if (straightness > 90) confidence += 2;
+  if (Math.abs(info.offset.y) < 15) confidence += 1;
+
   // Negative confidence signals
-  if (Math.abs(info.offset.y) > 30) confidence -= 2
-  if (straightness < 80) confidence -= 2
-  if (duration > 120) confidence -= 1
-  
-  return confidence
-}
+  if (Math.abs(info.offset.y) > 30) confidence -= 2;
+  if (straightness < 80) confidence -= 2;
+  if (duration > 120) confidence -= 1;
+
+  return confidence;
+};
 
 // In handleDrag:
-const confidence = calculateLockConfidence(info, totalDistance, duration)
+const confidence = calculateLockConfidence(info, totalDistance, duration);
 
 if (confidence >= 4 && totalDistance > 12) {
   // High confidence - lock early
@@ -973,6 +1080,7 @@ if (confidence >= 4 && totalDistance > 12) {
 ## Future Analysis Areas
 
 ### Potential Future Analyses:
+
 - [ ] Gesture detection accuracy by device type (iPhone vs Android)
 - [ ] Animation smoothness metrics (FPS analysis during gestures)
 - [ ] Multi-column vs single-column gesture pattern differences
@@ -989,6 +1097,9 @@ if (confidence >= 4 && totalDistance > 12) {
 ## Data Files
 
 **CSV Files Analyzed:**
+
+Located in `swipe_diagnostics/raw_data/`:
+
 - `Felix swipe-diagnostics-1761295825168.csv` (30 swipes)
 - `Pierre swipe-diagnostics-1761301087373.csv` (30 swipes)
 - `Hani swipe-diagnostics-1761312908203.csv` (30 swipes)
@@ -1003,12 +1114,14 @@ if (confidence >= 4 && totalDistance > 12) {
 ## Version History
 
 ### v1.0 (November 4, 2025)
+
 - Initial directional lock analysis
 - Comparison of 3 approaches (Current, Progressive, Simple Forced)
 - Data-driven success rate calculations
 - Decision documentation for v1.0.3 implementation
 
 ### v2.0 (November 4, 2025)
+
 - **Added 10 new deep insights:**
   1. User Learning Curves & Adaptation
   2. Velocity-Y Movement Inverse Correlation
@@ -1026,6 +1139,7 @@ if (confidence >= 4 && totalDistance > 12) {
 - Expanded user profiles with learning curves and signatures
 
 ### v2.1 (November 4, 2025)
+
 - Added Quick Navigation index
 - Added template section for new insights
 - Categorized insights into logical groups
@@ -1038,4 +1152,3 @@ if (confidence >= 4 && totalDistance > 12) {
 **Last Added Insight:** NEW INSIGHT 10 (Carousel Height Position Impact)  
 **Next Review:** When new diagnostic data is collected or new issues are reported  
 **Maintained By:** Design System Development Team
-

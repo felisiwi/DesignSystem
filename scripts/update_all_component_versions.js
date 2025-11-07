@@ -261,7 +261,7 @@ function updateProjectNotes(components) {
       newSection += '**Purpose**: Diagnostic tool for analyzing carousel swipe gestures\n\n';
       newSection += '**Quick Links**:\n';
       newSection += '- [Documentation](./src/components/carouseldiagnostics/carouseldiagnostics_documentation.md)\n';
-      newSection += '- [Analysis](./Data/swipe_diagnostics/CarouselDiagnostics_analysis.md)\n\n';
+      newSection += '- [Analysis](./Data/carousel_diagnostics/CarouselDiagnostics_analysis.md)\n\n';
     }
     
     newSection += '---\n\n';
@@ -319,7 +319,7 @@ function updateComponentsFile(components) {
       content += `Diagnostic tool for analyzing carousel swipe gestures with comprehensive metrics.\n\n`;
       content += `**Documentation**:\n`;
       content += `- [Component Documentation](./src/components/carouseldiagnostics/carouseldiagnostics_documentation.md)\n`;
-      content += `- [Analysis Results](./Data/swipe_diagnostics/CarouselDiagnostics_analysis.md)\n\n`;
+      content += `- [Analysis Results](./Data/carousel_diagnostics/CarouselDiagnostics_analysis.md)\n\n`;
     }
     
     content += `---\n\n`;

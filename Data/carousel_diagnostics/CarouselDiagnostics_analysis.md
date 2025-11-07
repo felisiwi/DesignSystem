@@ -32,8 +32,9 @@
 - **Total gestures analyzed:** 169 across both tests
 
 ### Data Sources
-- `Felix_CarouselSwipeDiagnostic_041125_2022.csv` (Test 1 - Bottom position)
+Located in `raw_data/`:
 - `Felix_CarouselSwipeDiagnostic_041125_2037.csv` (Test 2 - Top position)
+- Additional test files: `Caitlin_CarouselSwipeDiagnostic_061125_2103.csv`, `ChisomOgundu_CarouselSwipeDiagnostic_061125_1501.csv`, `Joana_CarouselSwipeDiagnostic_061125_1623.csv`
 
 ### Validation Approach
 - Cross-validated findings across positions to isolate physics issues from ergonomics
