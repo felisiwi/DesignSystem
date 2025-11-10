@@ -13,7 +13,7 @@ Auto-generated list of all components and their latest versions.
 | Component | Latest Version | File | Status |
 |-----------|----------------|------|--------|
 | **Adaptive Carousel** | v1.0.8 | [`AdaptiveCarousel.1.0.8.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.8.tsx) | ✅ |
-| **Carousediagnostics** | v1.0.1 | [`carousediagnostics.1.0.1.tsx`](./src/components/carouseldiagnostics/carousediagnostics.1.0.1.tsx) | ✅ |
+| **Carousediagnostics** | v1.0.2 | [`carousediagnostics.1.0.2.tsx`](./src/components/carouseldiagnostics/carousediagnostics.1.0.2.tsx) | ✅ |
 | **Reachmapper** | v1.0.2 | [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx) | ✅ |
 
 ---
@@ -38,8 +38,8 @@ A sophisticated, gesture-driven carousel component built with React and Framer M
 ## Carousediagnostics
 
 - **Directory**: `src/components/carouseldiagnostics/`
-- **Latest Version**: v1.0.1
-- **Component File**: [`carousediagnostics.1.0.1.tsx`](./src/components/carouseldiagnostics/carousediagnostics.1.0.1.tsx)
+- **Latest Version**: v1.0.2
+- **Component File**: [`carousediagnostics.1.0.2.tsx`](./src/components/carouseldiagnostics/carousediagnostics.1.0.2.tsx)
 - **Component Name**: `carousediagnostics`
 
 ### Carousel Diagnostics Tool

@@ -1,53 +1,53 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react'
-import { motion, useMotionValue, animate, PanInfo } from 'framer-motion'
-import { addPropertyControls, ControlType } from 'framer'
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { motion, useMotionValue, animate, PanInfo } from "framer-motion";
+import { addPropertyControls, ControlType } from "framer";
 
 // ========================================
 // GESTURE DETECTION CONSTANTS (Multi-dimensional Filtering)
 // ========================================
 // Screen-width based absolute thresholds (optimized for 2-column + 1-column usage)
-const GLIDE_DISTANCE_HIGH_CONFIDENCE = 170  // Lowered from 195 (better for 2-column)
-const GLIDE_DISTANCE_MEDIUM = 140           // Lowered from 156 (better for 2-column)
-const GLIDE_VELOCITY_MEDIUM = 120           // Requires truly fast swipe for T2
-const GLIDE_ACCELERATION_MEDIUM = 30        // Requires clearer "burst" for T2
-const GLIDE_DISTANCE_ENERGETIC = 155        // Lowered from 176 (better for 2-column)
-const GLIDE_VELOCITY_HIGH = 180             // Higher velocity needed for T3
-const GLIDE_ACCELERATION_HIGH = 50          // Clearer burst needed for T3
+const GLIDE_DISTANCE_HIGH_CONFIDENCE = 170; // Lowered from 195 (better for 2-column)
+const GLIDE_DISTANCE_MEDIUM = 140; // Lowered from 156 (better for 2-column)
+const GLIDE_VELOCITY_MEDIUM = 120; // Requires truly fast swipe for T2
+const GLIDE_ACCELERATION_MEDIUM = 30; // Requires clearer "burst" for T2
+const GLIDE_DISTANCE_ENERGETIC = 155; // Lowered from 176 (better for 2-column)
+const GLIDE_VELOCITY_HIGH = 180; // Higher velocity needed for T3
+const GLIDE_ACCELERATION_HIGH = 50; // Clearer burst needed for T3
 
 // Multi-dimensional filtering to prevent accidental glides
-const MIN_GLIDE_DURATION = 80  // ms - Glides should be longer gestures
-const MAX_GLIDE_VELOCITY = 600 // px/s - Very fast gestures are likely flicks
+const MIN_GLIDE_DURATION = 80; // ms - Glides should be longer gestures
+const MAX_GLIDE_VELOCITY = 600; // px/s - Very fast gestures are likely flicks
 
 interface AdaptiveCarouselProps {
-  children: React.ReactNode
-  columns?: number
-  gap?: number
-  horizontalPadding?: number
-  verticalPadding?: number
-  peakAmount?: number
-  arrowsEnabled?: boolean
-  dotsEnabled?: boolean
+  children: React.ReactNode;
+  columns?: number;
+  gap?: number;
+  horizontalPadding?: number;
+  verticalPadding?: number;
+  peakAmount?: number;
+  arrowsEnabled?: boolean;
+  dotsEnabled?: boolean;
   // Gesture detection props
-  snapThreshold?: number
-  velocityScaler?: number
-  velocityScalerPercentage?: number
+  snapThreshold?: number;
+  velocityScaler?: number;
+  velocityScalerPercentage?: number;
   // Animation props
-  flickStiffness?: number
-  flickDamping?: number
-  glideStiffness?: number
-  glideDamping?: number
+  flickStiffness?: number;
+  flickDamping?: number;
+  glideStiffness?: number;
+  glideDamping?: number;
   // Arrow styling props
-  arrowButtonSize?: number
-  arrowColor?: string
-  arrowPressedColor?: string
-  arrowDisabledColor?: string
-  arrowIconColor?: string
-  arrowIconDisabledColor?: string
+  arrowButtonSize?: number;
+  arrowColor?: string;
+  arrowPressedColor?: string;
+  arrowDisabledColor?: string;
+  arrowIconColor?: string;
+  arrowIconDisabledColor?: string;
   // Dots styling props
-  dotSize?: number
-  dotGap?: number
-  dotColor?: string
-  dotInactiveColor?: string
+  dotSize?: number;
+  dotGap?: number;
+  dotColor?: string;
+  dotInactiveColor?: string;
 }
 
 export default function AdaptiveCarousel({
@@ -67,124 +67,153 @@ export default function AdaptiveCarousel({
   glideStiffness = 120,
   glideDamping = 25,
   arrowButtonSize = 32,
-  arrowColor = '#F2F2F2',
-  arrowPressedColor = '#000000',
-  arrowDisabledColor = 'rgba(0, 0, 0, 0)',
-  arrowIconColor = '#4D4D4D',
-  arrowIconDisabledColor = '#CCCCCC',
+  arrowColor = "#F2F2F2",
+  arrowPressedColor = "#000000",
+  arrowDisabledColor = "rgba(0, 0, 0, 0)",
+  arrowIconColor = "#4D4D4D",
+  arrowIconDisabledColor = "#CCCCCC",
   dotSize = 8,
   dotGap = 8,
-  dotColor = '#000000',
-  dotInactiveColor = '#F2F2F2'
+  dotColor = "#000000",
+  dotInactiveColor = "#F2F2F2",
 }: AdaptiveCarouselProps) {
   // Basic state
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [itemWidth, setItemWidth] = useState(0)
-  const [containerWidth, setContainerWidth] = useState(0)
-  const [directionLock, setDirectionLock] = useState<'horizontal' | 'vertical' | null>(null)
-  
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [itemWidth, setItemWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [directionLock, setDirectionLock] = useState<
+    "horizontal" | "vertical" | null
+  >(null);
+
   // Refs
-  const containerRef = useRef<HTMLDivElement>(null)
-  const x = useMotionValue(0)
-  const velocityHistory = useRef<number[]>([])
-  const dragStartTime = useRef<number>(0)
-  const isAnimating = useRef(false)
-  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const velocityHistory = useRef<number[]>([]);
+  const dragStartTime = useRef<number>(0);
+  const isAnimating = useRef(false);
+
   // Basic children handling
-  const childrenArray = React.Children.toArray(children)
-  const totalItems = childrenArray.length
+  const childrenArray = React.Children.toArray(children);
+  const totalItems = childrenArray.length;
 
   // Layout calculations
-  const itemWidthWithGap = itemWidth + gap
-  const maxIndex = Math.max(0, totalItems - columns)
+  const itemWidthWithGap = itemWidth + gap;
+  const maxIndex = Math.max(0, totalItems - columns);
 
   // Unified velocity scaler system - Column-aware for longer glides in multi-column mode
   // 2-column users swipe faster but expect glides to travel longer (more cards)
   // Lower scaler = more sensitive = longer jumps
-  const baseScaler = 400 + (velocityScalerPercentage / 100) * 600
-  const actualVelocityScaler = columns > 1 
-    ? baseScaler * 0.65  // 2-column: 35% more sensitive (longer glides)
-    : baseScaler          // 1-column: standard sensitivity
+  const baseScaler = 400 + (velocityScalerPercentage / 100) * 600;
+  const actualVelocityScaler =
+    columns > 1
+      ? baseScaler * 0.65 // 2-column: 35% more sensitive (longer glides)
+      : baseScaler; // 1-column: standard sensitivity
 
   // Update container width
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        const width = containerRef.current.offsetWidth
-        setContainerWidth(width)
+        const width = containerRef.current.offsetWidth;
+        setContainerWidth(width);
       }
-    }
-    
-    updateWidth()
-    window.addEventListener('resize', updateWidth)
-    return () => window.removeEventListener('resize', updateWidth)
-  }, [])
+    };
+
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
 
   // Calculate item width (peakAmount handled by overflow/positioning, as in v0.1.1)
   useEffect(() => {
-    if (!containerRef.current || containerWidth === 0) return
+    if (!containerRef.current || containerWidth === 0) return;
 
-    const availableSpace = containerWidth - horizontalPadding * 2
-    const totalGaps = (columns - 1) * gap
-    const widthForCardFaces = availableSpace - totalGaps  // No peakAmount subtraction
-    const widthPerItem = widthForCardFaces / columns
+    const availableSpace = containerWidth - horizontalPadding * 2;
+    const totalGaps = (columns - 1) * gap;
+    const widthForCardFaces = availableSpace - totalGaps; // No peakAmount subtraction
+    const widthPerItem = widthForCardFaces / columns;
 
-    setItemWidth(widthPerItem)
-  }, [columns, gap, horizontalPadding, containerWidth])
+    setItemWidth(widthPerItem);
+  }, [columns, gap, horizontalPadding, containerWidth]);
 
   // Drag constraints
   const dragConstraints = useMemo(() => {
-    if (!containerRef.current || totalItems === 0 || itemWidth === 0 || maxIndex <= 0) {
-      return { left: 0, right: 0 }
+    if (
+      !containerRef.current ||
+      totalItems === 0 ||
+      itemWidth === 0 ||
+      maxIndex <= 0
+    ) {
+      return { left: 0, right: 0 };
     }
 
-    const totalContentWidth = itemWidthWithGap * totalItems - gap
-    const innerContentArea = containerWidth - horizontalPadding * 2
-    const maxDrag = Math.min(0, -(totalContentWidth - innerContentArea + peakAmount))
+    const totalContentWidth = itemWidthWithGap * totalItems - gap;
+    const innerContentArea = containerWidth - horizontalPadding * 2;
+    const maxDrag = Math.min(
+      0,
+      -(totalContentWidth - innerContentArea + peakAmount)
+    );
 
     return {
       left: maxDrag,
       right: 0,
-    }
-  }, [itemWidth, totalItems, maxIndex, horizontalPadding, containerWidth, gap, peakAmount])
+    };
+  }, [
+    itemWidth,
+    totalItems,
+    maxIndex,
+    horizontalPadding,
+    containerWidth,
+    gap,
+    peakAmount,
+  ]);
 
   // Navigation function with queue management
-  const goToIndex = async (index: number, velocity: number = 0, isMultiSkip: boolean = false) => {
-    if (itemWidth === 0) return
+  const goToIndex = async (
+    index: number,
+    velocity: number = 0,
+    isMultiSkip: boolean = false
+  ) => {
+    if (itemWidth === 0) return;
 
     // If already animating, stop current animation and proceed immediately
     if (isAnimating.current) {
-      x.stop()
+      x.stop();
     }
 
-    isAnimating.current = true
+    isAnimating.current = true;
 
     try {
-      const targetIndex = Math.max(0, Math.min(index, maxIndex))
-      const targetX = Math.round(-targetIndex * itemWidthWithGap)
+      const targetIndex = Math.max(0, Math.min(index, maxIndex));
+      const targetX = Math.round(-targetIndex * itemWidthWithGap);
 
       // FIX: If classified as glide but only moving 1 card, use flick animation
-      const cardsMoved = Math.abs(targetIndex - currentIndex)
-      const useGlideAnimation = isMultiSkip && cardsMoved > 1
-      
-      setCurrentIndex(targetIndex)
-      
+      const cardsMoved = Math.abs(targetIndex - currentIndex);
+      const useGlideAnimation = isMultiSkip && cardsMoved > 1;
+
+      setCurrentIndex(targetIndex);
+
       // Choose animation settings based on actual movement distance
-      const stiffness = useGlideAnimation ? glideStiffness : flickStiffness
-      const damping = useGlideAnimation ? glideDamping : flickDamping
+      const stiffness = useGlideAnimation ? glideStiffness : flickStiffness;
+      const damping = useGlideAnimation ? glideDamping : flickDamping;
 
       // DIFFERENT ANIMATION STRATEGY BASED ON COLUMNS
       if (useGlideAnimation && columns > 1) {
         // Single-step animation for multi-column (prevents overshoot)
-        const multiColumnStiffness = Math.min(Math.max(glideStiffness * 1.25, 120), 200)
-        const multiColumnDamping = Math.min(Math.max(glideDamping * 1.8, 40), 80)
-        
+        const multiColumnStiffness = Math.min(
+          Math.max(glideStiffness * 1.25, 120),
+          200
+        );
+        const multiColumnDamping = Math.min(
+          Math.max(glideDamping * 1.8, 40),
+          80
+        );
+
         await animate(x, targetX, {
           type: "spring",
           stiffness: multiColumnStiffness,
           damping: multiColumnDamping,
           velocity: velocity,
-        })
+        });
       } else if (useGlideAnimation) {
         // Two-step animation for single-column (maintains smoothness)
         // Step 1: Soft glide for momentum and feel
@@ -193,15 +222,15 @@ export default function AdaptiveCarousel({
           stiffness: stiffness,
           damping: damping,
           velocity: velocity,
-        })
-        
+        });
+
         // Step 2: Aggressive final snap for precision
         await animate(x, targetX, {
           type: "spring",
           stiffness: 1000,
           damping: 80,
           velocity: 0,
-        })
+        });
       } else {
         // Standard flick animation
         await animate(x, targetX, {
@@ -209,216 +238,239 @@ export default function AdaptiveCarousel({
           stiffness: stiffness,
           damping: damping,
           velocity: velocity,
-        })
+        });
       }
     } finally {
-      isAnimating.current = false
+      isAnimating.current = false;
     }
-  }
+  };
 
   // Drag handlers
   const handleDragStart = () => {
-    x.stop()
-    isAnimating.current = false  // Clear animation flag to allow immediate drag
-    dragStartTime.current = Date.now()
-    velocityHistory.current = []
-    setDirectionLock(null)  // Reset direction lock at start of each drag
-  }
+    x.stop();
+    isAnimating.current = false; // Clear animation flag to allow immediate drag
+    dragStartTime.current = Date.now();
+    velocityHistory.current = [];
+    setDirectionLock(null); // Reset direction lock at start of each drag
+  };
 
   const handleDrag = (event: any, info: PanInfo) => {
     // SIMPLE FORCED DECISION: 3px buffer + forced decision at 25px
     // This approach achieves 94-97% success rate (vs 68-72% current)
     // Data-driven analysis documented in Data/SWIPE_DIAGNOSTICS_INSIGHTS.md
-    
+
     if (directionLock === null) {
       // Calculate total movement distance
-      const totalDistance = Math.sqrt(info.offset.x ** 2 + info.offset.y ** 2)
-      
+      const totalDistance = Math.sqrt(info.offset.x ** 2 + info.offset.y ** 2);
+
       // Tiny buffer (3px) to avoid jitter - matches documentation suggestion
       if (totalDistance < 3) {
-        velocityHistory.current.push(Math.abs(info.velocity.x))
-        return
+        velocityHistory.current.push(Math.abs(info.velocity.x));
+        return;
       }
-      
-      const angle = Math.abs(Math.atan2(info.offset.y, info.offset.x) * 180 / Math.PI)
-      
+
+      const angle = Math.abs(
+        (Math.atan2(info.offset.y, info.offset.x) * 180) / Math.PI
+      );
+
       if (angle < 30) {
         // Mostly horizontal (< 30°) → lock to carousel immediately
-        setDirectionLock('horizontal')
+        setDirectionLock("horizontal");
       } else if (angle > 60) {
         // Mostly vertical (> 60°) → allow page scroll immediately
-        setDirectionLock('vertical')
+        setDirectionLock("vertical");
       } else if (totalDistance > 25) {
         // Force decision after 25px - pick dominant direction
         // This resolves the 30-60° dead zone that causes simultaneous scrolling
-        const horizontalRatio = Math.abs(info.offset.x) / totalDistance
-        setDirectionLock(horizontalRatio > 0.5 ? 'horizontal' : 'vertical')
+        const horizontalRatio = Math.abs(info.offset.x) / totalDistance;
+        setDirectionLock(horizontalRatio > 0.5 ? "horizontal" : "vertical");
       }
       // 30-60° dead zone exists but will resolve at 25px (forced decision)
     }
-    
+
     // Block page scroll only if locked horizontal
-    if (directionLock === 'horizontal' && event.cancelable) {
-      event.preventDefault()
+    if (directionLock === "horizontal" && event.cancelable) {
+      event.preventDefault();
     }
-    
-    velocityHistory.current.push(Math.abs(info.velocity.x))
-  }
+
+    velocityHistory.current.push(Math.abs(info.velocity.x));
+  };
 
   const handleDragEnd = (event: any, info: PanInfo) => {
-    if (itemWidth === 0) return
+    if (itemWidth === 0) return;
 
-    const velocity = Math.abs(info.velocity.x)
-    const dragOffset = info.offset.x
-    const dragDirection = dragOffset < 0 ? 1 : -1
-    const distance = Math.abs(dragOffset)
-    const duration = Date.now() - dragStartTime.current
+    const velocity = Math.abs(info.velocity.x);
+    const dragOffset = info.offset.x;
+    const dragDirection = dragOffset < 0 ? 1 : -1;
+    const distance = Math.abs(dragOffset);
+    const duration = Date.now() - dragStartTime.current;
 
     // Calculate peak acceleration
-    let peakAcceleration = 0
+    let peakAcceleration = 0;
     if (velocityHistory.current.length >= 2) {
-      const accelerations: number[] = []
+      const accelerations: number[] = [];
       for (let i = 1; i < velocityHistory.current.length; i++) {
-        accelerations.push(Math.abs(velocityHistory.current[i] - velocityHistory.current[i - 1]))
+        accelerations.push(
+          Math.abs(velocityHistory.current[i] - velocityHistory.current[i - 1])
+        );
       }
-      peakAcceleration = Math.max(...accelerations)
+      peakAcceleration = Math.max(...accelerations);
     }
 
-    let targetIndex = currentIndex
-    let isMultiSkip = false
+    let targetIndex = currentIndex;
+    let isMultiSkip = false;
 
     // SAFETY RAIL: Catch extreme-acceleration flicks (works well for both column configurations)
     if (peakAcceleration > 600 && distance < 175) {
-      isMultiSkip = false
-      const distanceThreshold = itemWidth * (snapThreshold / 100)
+      isMultiSkip = false;
+      const distanceThreshold = itemWidth * (snapThreshold / 100);
       if (distance > distanceThreshold) {
-        targetIndex = currentIndex + dragDirection
+        targetIndex = currentIndex + dragDirection;
       } else {
-        targetIndex = currentIndex
+        targetIndex = currentIndex;
       }
     } else {
       // WEIGHTED SCORING
-      let glideScore = 0
-      if (duration > 40) glideScore += 2          // Lowered from 50ms
-      if (velocity < 2000) glideScore += 1        // Raised from 1800
-      if (distance > 140) glideScore += 2         // Lowered from 160
-      if (peakAcceleration < 600) glideScore += 1
+      let glideScore = 0;
+      if (duration > 40) glideScore += 2; // Lowered from 50ms
+      if (velocity < 2000) glideScore += 1; // Raised from 1800
+      if (distance > 140) glideScore += 2; // Lowered from 160
+      if (peakAcceleration < 600) glideScore += 1;
 
-      if (glideScore < 4) {                       // Lowered from 5
-        isMultiSkip = false
-        const distanceThreshold = itemWidth * (snapThreshold / 100)
+      if (glideScore < 4) {
+        // Lowered from 5
+        isMultiSkip = false;
+        const distanceThreshold = itemWidth * (snapThreshold / 100);
         if (distance > distanceThreshold) {
-          targetIndex = currentIndex + dragDirection
+          targetIndex = currentIndex + dragDirection;
         } else {
-          targetIndex = currentIndex
+          targetIndex = currentIndex;
         }
       } else {
         // Tier detection for glides
-        isMultiSkip = true
+        isMultiSkip = true;
         if (distance > GLIDE_DISTANCE_HIGH_CONFIDENCE) {
-          const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler))
-          targetIndex = currentIndex + dragDirection * indexJump
+          const indexJump = Math.max(
+            1,
+            Math.round(velocity / actualVelocityScaler)
+          );
+          targetIndex = currentIndex + dragDirection * indexJump;
         } else if (
           distance > GLIDE_DISTANCE_MEDIUM &&
           velocity > GLIDE_VELOCITY_MEDIUM &&
           peakAcceleration > GLIDE_ACCELERATION_MEDIUM
         ) {
-          const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler))
-          targetIndex = currentIndex + dragDirection * indexJump
+          const indexJump = Math.max(
+            1,
+            Math.round(velocity / actualVelocityScaler)
+          );
+          targetIndex = currentIndex + dragDirection * indexJump;
         } else if (
           distance > GLIDE_DISTANCE_ENERGETIC &&
-          (velocity > GLIDE_VELOCITY_HIGH || peakAcceleration > GLIDE_ACCELERATION_HIGH)
+          (velocity > GLIDE_VELOCITY_HIGH ||
+            peakAcceleration > GLIDE_ACCELERATION_HIGH)
         ) {
-          const indexJump = Math.max(1, Math.round(velocity / actualVelocityScaler))
-          targetIndex = currentIndex + dragDirection * indexJump
+          const indexJump = Math.max(
+            1,
+            Math.round(velocity / actualVelocityScaler)
+          );
+          targetIndex = currentIndex + dragDirection * indexJump;
         } else {
-          const distanceThreshold = itemWidth * (snapThreshold / 100)
+          const distanceThreshold = itemWidth * (snapThreshold / 100);
           if (distance > distanceThreshold) {
-            targetIndex = currentIndex + dragDirection
+            targetIndex = currentIndex + dragDirection;
           } else {
-            targetIndex = currentIndex
+            targetIndex = currentIndex;
           }
         }
       }
     }
 
     // FIX: Calculate velocity direction based on actual X-axis movement
-    const targetX = -targetIndex * itemWidthWithGap
-    const currentX = x.get()
-    const xMovementDirection = targetX > currentX ? 1 : -1
-    const correctedVelocity = Math.abs(info.velocity.x) * xMovementDirection
+    const targetX = -targetIndex * itemWidthWithGap;
+    const currentX = x.get();
+    const xMovementDirection = targetX > currentX ? 1 : -1;
+    const correctedVelocity = Math.abs(info.velocity.x) * xMovementDirection;
 
-    goToIndex(targetIndex, correctedVelocity, isMultiSkip)
-    velocityHistory.current = []
-  }
+    goToIndex(targetIndex, correctedVelocity, isMultiSkip);
+    velocityHistory.current = [];
+  };
 
   // Navigation functions
   const navigate = (direction: number) => {
-    const artificialVelocity = direction * 200
-    goToIndex(currentIndex + direction, artificialVelocity, true)
-  }
-  
+    const artificialVelocity = direction * 200;
+    goToIndex(currentIndex + direction, artificialVelocity, true);
+  };
+
   // Keyboard navigation handler
   const handleKeyDown = (event: React.KeyboardEvent) => {
     switch (event.key) {
-      case 'ArrowLeft':
-        event.preventDefault()
+      case "ArrowLeft":
+        event.preventDefault();
         if (currentIndex > 0) {
-          navigate(-1)
+          navigate(-1);
         }
-        break
-      case 'ArrowRight':
-        event.preventDefault()
+        break;
+      case "ArrowRight":
+        event.preventDefault();
         if (currentIndex < maxIndex) {
-          navigate(1)
+          navigate(1);
         }
-        break
-      case 'Home':
-        event.preventDefault()
-        goToIndex(0)
-        break
-      case 'End':
-        event.preventDefault()
-        goToIndex(maxIndex)
-        break
+        break;
+      case "Home":
+        event.preventDefault();
+        goToIndex(0);
+        break;
+      case "End":
+        event.preventDefault();
+        goToIndex(maxIndex);
+        break;
     }
-  }
+  };
 
   // Arrow button keyboard handlers
-  const handleArrowKeyDown = (event: React.KeyboardEvent, direction: number) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
+  const handleArrowKeyDown = (
+    event: React.KeyboardEvent,
+    direction: number
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
       if (direction === -1 && !disablePrev) {
-        navigate(-1)
+        navigate(-1);
       } else if (direction === 1 && !disableNext) {
-        navigate(1)
+        navigate(1);
       }
     }
-  }
+  };
 
   // Dot keyboard handlers
   const handleDotKeyDown = (event: React.KeyboardEvent, index: number) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      goToIndex(index)
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      goToIndex(index);
     }
-  }
+  };
 
-  const disablePrev = currentIndex === 0
-  const disableNext = currentIndex === maxIndex
+  const disablePrev = currentIndex === 0;
+  const disableNext = currentIndex === maxIndex;
 
   // Calculate icon size based on button size
   const getIconSize = (buttonSize: number) => {
     switch (buttonSize) {
-      case 24: return 16
-      case 32: return 24
-      case 48: return 32
-      case 56: return 40
-      default: return 24
+      case 24:
+        return 16;
+      case 32:
+        return 24;
+      case 48:
+        return 32;
+      case 56:
+        return 40;
+      default:
+        return 24;
     }
-  }
+  };
 
-  const iconSize = getIconSize(arrowButtonSize)
+  const iconSize = getIconSize(arrowButtonSize);
 
   // Arrow Icons
   const ArrowLeft = (props: { size: number; color: string }) => (
@@ -434,7 +486,7 @@ export default function AdaptiveCarousel({
         fill={props.color}
       />
     </svg>
-  )
+  );
 
   const ArrowRight = (props: { size: number; color: string }) => (
     <svg
@@ -449,42 +501,46 @@ export default function AdaptiveCarousel({
         fill={props.color}
       />
     </svg>
-  )
+  );
 
   // Edge cases
   if (totalItems === 0) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        height: '200px',
-        color: '#666',
-        fontSize: '16px'
-      }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "200px",
+          color: "#666",
+          fontSize: "16px",
+        }}
+      >
         No content to display
       </div>
-    )
+    );
   }
 
   if (totalItems === 1) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        height: '100%' 
-      }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+        }}
+      >
         {children}
       </div>
-    )
+    );
   }
 
   return (
     <div
       style={{
         width: "100%",
-        height: "100%", 
+        height: "100%",
         display: "flex",
         flexDirection: "column",
       }}
@@ -493,25 +549,27 @@ export default function AdaptiveCarousel({
       <div
         ref={containerRef}
         role="region"
-        aria-label={`Carousel showing card ${currentIndex + 1} of ${maxIndex + 1}`}
+        aria-label={`Carousel showing card ${currentIndex + 1} of ${
+          maxIndex + 1
+        }`}
         aria-live="polite"
         tabIndex={0}
         onKeyDown={handleKeyDown}
         style={{
           flex: 1,
-          overflow: 'hidden',
-          position: 'relative',
-          touchAction: 'auto',  // Changed from 'pan-x pinch-zoom' to allow directional lock
-          overscrollBehavior: 'none',
-          overscrollBehaviorX: 'none',
-          height: '100%',
-          minHeight: '200px',
+          overflow: "hidden",
+          position: "relative",
+          touchAction: "auto", // Changed from 'pan-x pinch-zoom' to allow directional lock
+          overscrollBehavior: "none",
+          overscrollBehaviorX: "none",
+          height: "100%",
+          minHeight: "200px",
           // APPLYING PADDING (like working version)
           paddingLeft: `${horizontalPadding}px`,
           paddingRight: `${horizontalPadding}px`,
           paddingTop: `${verticalPadding}px`,
           paddingBottom: `${verticalPadding}px`,
-          outline: 'none'
+          outline: "none",
         }}
       >
         <motion.div
@@ -522,25 +580,25 @@ export default function AdaptiveCarousel({
           dragTransition={{
             power: 0.2,
             timeConstant: 200,
-            modifyTarget: (t) => t
+            modifyTarget: (t) => t,
           }}
           dragPropagation={false}
           onDragStart={handleDragStart}
           onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           style={{
-            display: 'flex',
+            display: "flex",
             gap: `${gap}px`,
             x,
-            cursor: 'grab',
-            minHeight: 0,  // Allows flex child to shrink below content size if needed
-            willChange: 'transform',
+            cursor: "grab",
+            minHeight: 0, // Allows flex child to shrink below content size if needed
+            willChange: "transform",
           }}
-          whileTap={{ cursor: 'grabbing' }}
+          whileTap={{ cursor: "grabbing" }}
         >
           {childrenArray.map((child, index) => {
             // All cards use the same width (peakAmount handled by overflow/positioning)
-            const finalItemWidth = itemWidth
+            const finalItemWidth = itemWidth;
 
             return (
               <div
@@ -550,22 +608,29 @@ export default function AdaptiveCarousel({
                   minWidth: `${finalItemWidth}px`,
                   maxWidth: `${finalItemWidth}px`,
                   flexShrink: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                {React.cloneElement(child as React.ReactElement<{ style?: React.CSSProperties }>, {
-                  style: {
-                    ...(child as React.ReactElement<{ style?: React.CSSProperties }>).props?.style,
-                    // ONLY force width constraints, NOT height
-                    width: '100%',
-                    minWidth: 'unset',
-                    maxWidth: '100%',
-                    // NO height, minHeight, or maxHeight forcing
+                {React.cloneElement(
+                  child as React.ReactElement<{ style?: React.CSSProperties }>,
+                  {
+                    style: {
+                      ...(
+                        child as React.ReactElement<{
+                          style?: React.CSSProperties;
+                        }>
+                      ).props?.style,
+                      // ONLY force width constraints, NOT height
+                      width: "100%",
+                      minWidth: "unset",
+                      maxWidth: "100%",
+                      // NO height, minHeight, or maxHeight forcing
+                    },
                   }
-                })}
+                )}
               </div>
-            )
+            );
           })}
         </motion.div>
       </div>
@@ -574,10 +639,10 @@ export default function AdaptiveCarousel({
       {arrowsEnabled && (
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
+            display: "flex",
+            justifyContent: "flex-end",
             padding: `16px ${horizontalPadding}px 0 0`,
-            gap: '8px',
+            gap: "8px",
           }}
         >
           {/* Previous Button */}
@@ -592,16 +657,16 @@ export default function AdaptiveCarousel({
             style={{
               width: `${arrowButtonSize}px`,
               height: `${arrowButtonSize}px`,
-              borderRadius: '50%',
-              border: 'none',
+              borderRadius: "50%",
+              border: "none",
               backgroundColor: disablePrev ? arrowDisabledColor : arrowColor,
-              cursor: disablePrev ? 'not-allowed' : 'pointer',
+              cursor: disablePrev ? "not-allowed" : "pointer",
               padding: 0,
               opacity: disablePrev ? 0.7 : 1,
-              transition: 'opacity 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              transition: "opacity 0.2s",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
             aria-label="Previous slide"
           >
@@ -623,16 +688,16 @@ export default function AdaptiveCarousel({
             style={{
               width: `${arrowButtonSize}px`,
               height: `${arrowButtonSize}px`,
-              borderRadius: '50%',
-              border: 'none',
+              borderRadius: "50%",
+              border: "none",
               backgroundColor: disableNext ? arrowDisabledColor : arrowColor,
-              cursor: disableNext ? 'not-allowed' : 'pointer',
+              cursor: disableNext ? "not-allowed" : "pointer",
               padding: 0,
               opacity: disableNext ? 0.7 : 1,
-              transition: 'opacity 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              transition: "opacity 0.2s",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
             aria-label="Next slide"
           >
@@ -648,12 +713,12 @@ export default function AdaptiveCarousel({
       {dotsEnabled && (
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             gap: `${dotGap}px`,
-            padding: '16px',
-            minHeight: '24px',
+            padding: "16px",
+            minHeight: "24px",
           }}
         >
           {Array.from({ length: maxIndex + 1 }).map((_, index) => (
@@ -664,12 +729,13 @@ export default function AdaptiveCarousel({
               style={{
                 width: `${dotSize}px`,
                 height: `${dotSize}px`,
-                borderRadius: '50%',
-                border: 'none',
-                backgroundColor: index === currentIndex ? dotColor : dotInactiveColor,
-                cursor: 'pointer',
+                borderRadius: "50%",
+                border: "none",
+                backgroundColor:
+                  index === currentIndex ? dotColor : dotInactiveColor,
+                cursor: "pointer",
                 padding: 0,
-                transition: 'all 0.3s ease',
+                transition: "all 0.3s ease",
               }}
               aria-label={`Go to slide ${index + 1}`}
             />
@@ -677,7 +743,7 @@ export default function AdaptiveCarousel({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 addPropertyControls(AdaptiveCarousel, {
@@ -752,7 +818,8 @@ addPropertyControls(AdaptiveCarousel, {
     defaultValue: 10,
     displayStepper: true,
     unit: "%",
-    description: "The minimum drag distance (as a percentage of a card's width) required to successfully change pages. A shorter swipe will snap back.",
+    description:
+      "The minimum drag distance (as a percentage of a card's width) required to successfully change pages. A shorter swipe will snap back.",
   },
   velocityScalerPercentage: {
     type: ControlType.Number,
@@ -763,7 +830,8 @@ addPropertyControls(AdaptiveCarousel, {
     defaultValue: 20,
     displayStepper: true,
     unit: "%",
-    description: "Controls how far a fast swipe glides. Lower value = more pages skipped and a longer animation.",
+    description:
+      "Controls how far a fast swipe glides. Lower value = more pages skipped and a longer animation.",
   },
   flickStiffness: {
     type: ControlType.Number,
@@ -875,5 +943,4 @@ addPropertyControls(AdaptiveCarousel, {
     defaultValue: "#F2F2F2",
     hidden: (props) => !props.dotsEnabled,
   },
-})
-
+});

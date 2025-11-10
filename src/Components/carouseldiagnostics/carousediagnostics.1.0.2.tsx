@@ -123,11 +123,9 @@ const MiniCarousel: React.FC<MiniCarouselProps> = ({
   const dragStartTime = useRef<number>(0);
   const touchPressures = useRef<number[]>([]);
   const lastGestureTime = useRef<number>(0);
-  const deviceMotionStart = useRef<{
-    x: number;
-    y: number;
-    z: number;
-  } | null>(null);
+  const deviceMotionStart = useRef<{ x: number; y: number; z: number } | null>(
+    null
+  );
   const deviceMotionData = useRef<Array<{ x: number; y: number; z: number }>>(
     []
   );
@@ -142,6 +140,23 @@ const MiniCarousel: React.FC<MiniCarouselProps> = ({
   const gap = 8;
   const horizontalPadding = 16;
   const maxIndex = Math.max(0, totalItems - columns);
+
+  // Animation and gesture detection constants (matching AdaptiveCarousel.1.0.4)
+  const velocityScalerPercentage = 20; // Default: 20%
+  const snapThreshold = 10; // Default: 10% of card width
+  const flickStiffness = 500;
+  const flickDamping = 55;
+  const glideStiffness = 120;
+  const glideDamping = 25;
+
+  // Unified velocity scaler system - Column-aware for longer glides in multi-column mode
+  // 2-column users swipe faster but expect glides to travel longer (more cards)
+  // Lower scaler = more sensitive = longer jumps
+  const baseScaler = 400 + (velocityScalerPercentage / 100) * 600;
+  const actualVelocityScaler =
+    columns > 1
+      ? baseScaler * 0.65 // 2-column: 35% more sensitive (longer glides)
+      : baseScaler; // 1-column: standard sensitivity
 
   // Calculate item width
   useEffect(() => {
@@ -348,26 +363,110 @@ const MiniCarousel: React.FC<MiniCarouselProps> = ({
     // Animate to target
     const dragDirection = info.offset.x > 0 ? -1 : 1;
     let targetIndex = currentIndex;
+    let isMultiSkip = false;
 
-    // Gesture detection (simplified)
-    const isMultiSkip = detectGlide(distance, velocity, peakAcceleration);
-
-    if (isMultiSkip) {
-      targetIndex = Math.max(
-        0,
-        Math.min(maxIndex, currentIndex + dragDirection * 2)
-      );
+    // SAFETY RAIL: Catch extreme-acceleration flicks (works well for both column configurations)
+    if (peakAcceleration > 600 && distance < 175) {
+      isMultiSkip = false;
+      const distanceThreshold = itemWidth * (snapThreshold / 100);
+      if (distance > distanceThreshold) {
+        targetIndex = currentIndex + dragDirection;
+      } else {
+        targetIndex = currentIndex;
+      }
     } else {
-      if (distance > itemWidth * 0.1) {
-        targetIndex = Math.max(
-          0,
-          Math.min(maxIndex, currentIndex + dragDirection)
-        );
+      // WEIGHTED SCORING
+      let glideScore = 0;
+      if (duration > 40) glideScore += 2; // Lowered from 50ms
+      if (velocity < 2000) glideScore += 1; // Raised from 1800
+      if (distance > 140) glideScore += 2; // Lowered from 160
+      if (peakAcceleration < 600) glideScore += 1;
+
+      if (glideScore < 4) {
+        // Lowered from 5
+        isMultiSkip = false;
+        const distanceThreshold = itemWidth * (snapThreshold / 100);
+        if (distance > distanceThreshold) {
+          targetIndex = currentIndex + dragDirection;
+        } else {
+          targetIndex = currentIndex;
+        }
+      } else {
+        // Tier detection for glides
+        isMultiSkip = true;
+        const maxJump = 3; // Cap maximum jump at 3 cards
+
+        if (distance > GLIDE_DISTANCE_HIGH_CONFIDENCE) {
+          const indexJump = Math.min(
+            maxJump,
+            Math.max(1, Math.round(velocity / actualVelocityScaler))
+          );
+          targetIndex = currentIndex + dragDirection * indexJump;
+        } else if (
+          distance > GLIDE_DISTANCE_MEDIUM &&
+          velocity > GLIDE_VELOCITY_MEDIUM &&
+          peakAcceleration > GLIDE_ACCELERATION_MEDIUM
+        ) {
+          const indexJump = Math.min(
+            maxJump,
+            Math.max(1, Math.round(velocity / actualVelocityScaler))
+          );
+          targetIndex = currentIndex + dragDirection * indexJump;
+        } else if (
+          distance > GLIDE_DISTANCE_ENERGETIC &&
+          (velocity > GLIDE_VELOCITY_HIGH ||
+            peakAcceleration > GLIDE_ACCELERATION_HIGH)
+        ) {
+          const indexJump = Math.min(
+            maxJump,
+            Math.max(1, Math.round(velocity / actualVelocityScaler))
+          );
+          targetIndex = currentIndex + dragDirection * indexJump;
+        } else {
+          const distanceThreshold = itemWidth * (snapThreshold / 100);
+          if (distance > distanceThreshold) {
+            targetIndex = currentIndex + dragDirection;
+          } else {
+            targetIndex = currentIndex;
+          }
+        }
       }
     }
 
+    // Clamp target index to valid range
+    targetIndex = Math.max(0, Math.min(maxIndex, targetIndex));
+
+    // FIX: If classified as glide but only moving 1 card, use flick animation
+    const cardsMoved = Math.abs(targetIndex - currentIndex);
+    const useGlideAnimation = isMultiSkip && cardsMoved > 1;
+
+    // Choose animation settings based on actual movement distance
+    const stiffness = useGlideAnimation ? glideStiffness : flickStiffness;
+    const damping = useGlideAnimation ? glideDamping : flickDamping;
+
+    // DIFFERENT ANIMATION STRATEGY BASED ON COLUMNS (matching AdaptiveCarousel.1.0.4)
+    let animationStiffness = stiffness;
+    let animationDamping = damping;
+
+    if (useGlideAnimation && columns > 1) {
+      // Single-step animation for multi-column (prevents overshoot)
+      animationStiffness = Math.min(
+        Math.max(glideStiffness * 1.25, 120),
+        200
+      );
+      animationDamping = Math.min(
+        Math.max(glideDamping * 1.8, 40),
+        80
+      );
+    }
+
     const targetX = -(targetIndex * (itemWidth + gap));
-    animate(x, targetX, { stiffness: 300, damping: 40 });
+    animate(x, targetX, {
+      type: "spring",
+      stiffness: animationStiffness,
+      damping: animationDamping,
+      velocity: info.velocity.x * dragDirection,
+    });
     setCurrentIndex(targetIndex);
 
     // Report gesture data
@@ -431,10 +530,7 @@ const MiniCarousel: React.FC<MiniCarouselProps> = ({
       >
         <motion.div
           drag="x"
-          dragConstraints={{
-            left: -(maxIndex * (itemWidth + gap)),
-            right: 0,
-          }}
+          dragConstraints={{ left: -(maxIndex * (itemWidth + gap)), right: 0 }}
           dragElastic={0.1}
           onDragStart={handleDragStart}
           onDrag={handleDrag}
@@ -782,10 +878,7 @@ export default function CarouselSwipeDiagnostic() {
           DeviceMotionEvent as any
         ).requestPermission();
         motionGranted = motionPermission === "granted";
-        setPermissionsGranted((prev) => ({
-          ...prev,
-          motion: motionGranted,
-        }));
+        setPermissionsGranted((prev) => ({ ...prev, motion: motionGranted }));
       } else {
         // Android/Firefox - try to access sensors directly
         // Note: Firefox on Android may have limited sensor support
@@ -811,10 +904,7 @@ export default function CarouselSwipeDiagnostic() {
         // Android/Firefox
         if (typeof DeviceOrientationEvent !== "undefined") {
           orientationGranted = true;
-          setPermissionsGranted((prev) => ({
-            ...prev,
-            orientation: true,
-          }));
+          setPermissionsGranted((prev) => ({ ...prev, orientation: true }));
         }
       }
 
@@ -1077,21 +1167,13 @@ export default function CarouselSwipeDiagnostic() {
           }}
         >
           <h1
-            style={{
-              fontSize: "28px",
-              marginBottom: "32px",
-              fontWeight: 600,
-            }}
+            style={{ fontSize: "28px", marginBottom: "32px", fontWeight: 600 }}
           >
             Carousel Swipe Diagnostic
           </h1>
 
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-            }}
+            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
           >
             <div>
               <label
@@ -1108,10 +1190,7 @@ export default function CarouselSwipeDiagnostic() {
                 type="text"
                 value={setupData.name}
                 onChange={(e) =>
-                  setSetupData({
-                    ...setupData,
-                    name: e.target.value,
-                  })
+                  setSetupData({ ...setupData, name: e.target.value })
                 }
                 style={{
                   width: "100%",
@@ -1140,10 +1219,7 @@ export default function CarouselSwipeDiagnostic() {
                 type="text"
                 value={setupData.handSpan}
                 onChange={(e) =>
-                  setSetupData({
-                    ...setupData,
-                    handSpan: e.target.value,
-                  })
+                  setSetupData({ ...setupData, handSpan: e.target.value })
                 }
                 style={{
                   width: "100%",
@@ -1171,10 +1247,7 @@ export default function CarouselSwipeDiagnostic() {
               <div style={{ display: "flex", gap: "8px" }}>
                 <button
                   onClick={() =>
-                    setSetupData({
-                      ...setupData,
-                      doneBefore: false,
-                    })
+                    setSetupData({ ...setupData, doneBefore: false })
                   }
                   style={{
                     flex: 1,
@@ -1193,10 +1266,7 @@ export default function CarouselSwipeDiagnostic() {
                 </button>
                 <button
                   onClick={() =>
-                    setSetupData({
-                      ...setupData,
-                      doneBefore: true,
-                    })
+                    setSetupData({ ...setupData, doneBefore: true })
                   }
                   style={{
                     flex: 1,
@@ -1230,10 +1300,7 @@ export default function CarouselSwipeDiagnostic() {
               <div style={{ display: "flex", gap: "8px" }}>
                 <button
                   onClick={() =>
-                    setSetupData({
-                      ...setupData,
-                      carouselPosition: "top",
-                    })
+                    setSetupData({ ...setupData, carouselPosition: "top" })
                   }
                   style={{
                     flex: 1,
@@ -1254,10 +1321,7 @@ export default function CarouselSwipeDiagnostic() {
                 </button>
                 <button
                   onClick={() =>
-                    setSetupData({
-                      ...setupData,
-                      carouselPosition: "bottom",
-                    })
+                    setSetupData({ ...setupData, carouselPosition: "bottom" })
                   }
                   style={{
                     flex: 1,
@@ -1528,20 +1592,14 @@ export default function CarouselSwipeDiagnostic() {
                 const touch = e.touches[0];
                 setCalibrationData({
                   ...calibrationData,
-                  thumbRestPosition: {
-                    x: touch.clientX,
-                    y: touch.clientY,
-                  },
+                  thumbRestPosition: { x: touch.clientX, y: touch.clientY },
                 });
                 setThumbCaptured(true);
               }}
               onClick={(e) => {
                 setCalibrationData({
                   ...calibrationData,
-                  thumbRestPosition: {
-                    x: e.clientX,
-                    y: e.clientY,
-                  },
+                  thumbRestPosition: { x: e.clientX, y: e.clientY },
                 });
                 setThumbCaptured(true);
               }}
@@ -1702,11 +1760,7 @@ export default function CarouselSwipeDiagnostic() {
               </p>
               {flickCount > 0 && (
                 <p
-                  style={{
-                    fontSize: "14px",
-                    color: "#999",
-                    marginTop: "8px",
-                  }}
+                  style={{ fontSize: "14px", color: "#999", marginTop: "8px" }}
                 >
                   Flicks: {flickCount}{" "}
                   {flickCount >= MIN_GESTURES && "✓ Minimum reached"}
@@ -1770,11 +1824,7 @@ export default function CarouselSwipeDiagnostic() {
               </p>
               {glideCount > 0 && (
                 <p
-                  style={{
-                    fontSize: "14px",
-                    color: "#999",
-                    marginTop: "8px",
-                  }}
+                  style={{ fontSize: "14px", color: "#999", marginTop: "8px" }}
                 >
                   Glides: {glideCount}{" "}
                   {glideCount >= MIN_GESTURES && "✓ Minimum reached"}
