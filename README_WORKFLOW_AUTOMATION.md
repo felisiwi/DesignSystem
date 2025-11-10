@@ -8,10 +8,10 @@ This document explains **all automated workflows** set up for this project. Use 
 
 | Command | Where to Run | What It Does |
 |---------|-------------|--------------|
-| `claude-export` | PowerShell | Updates component MASTER docs from latest session |
-| `claude-export [Component]` | PowerShell | Updates specific component (e.g., `claude-export Carousel`) |
-| `claude-export all` | PowerShell | Updates ALL components |
-| `claude-sync` | PowerShell | Quick commit & push of session notes |
+| `claude-export` | PowerShell/Bash | Updates component MASTER docs from latest session |
+| `claude-export [Component]` | PowerShell/Bash | Updates specific component (e.g., `claude-export Carousel`) |
+| `claude-export all` | PowerShell/Bash | Updates ALL components |
+| `claude-sync` | PowerShell/Bash | Quick commit & push of session notes |
 | `npm run update-components` | Terminal | Manually update component registry |
 | `npm run release-notes v1.0.5` | Terminal | Generate release notes for a version |
 | `npm test` | Terminal | Run tests |
@@ -21,9 +21,9 @@ This document explains **all automated workflows** set up for this project. Use 
 
 ## 📋 Complete Automation Overview
 
-### 1. PowerShell Commands (Claude Session Integration)
+### 1. Claude Session Integration Commands
 
-**Location:** Your PowerShell profile (`$PROFILE`)
+**Available in:** PowerShell (functions) or Bash (scripts)
 
 **What's Available:**
 
@@ -34,6 +34,32 @@ This document explains **all automated workflows** set up for this project. Use 
 - Creates a summary snippet
 - Adds it to the component's MASTER.md file
 - Commits and pushes to GitHub automatically
+
+**How it works:**
+1. Looks in `notes/claude-sessions/[ComponentName]/`
+2. Finds most recent `.md` file (excluding MASTER files)
+3. Extracts key points and date
+4. Inserts summary into `[ComponentName]_MASTER.md` above "END OF MASTER DOCUMENTATION"
+5. Commits and pushes automatically
+
+**Behind the scenes:**
+- Calls `./scripts/post_chat.sh [ComponentName]`
+- The bash script handles the actual integration
+
+#### PowerShell Setup
+
+**Location:** Your PowerShell profile (`$PROFILE`)
+
+**Installation:**
+1. Open your PowerShell profile:
+   ```powershell
+   notepad $PROFILE
+   ```
+2. Copy the entire contents of `claude-export-function.ps1` into your profile
+3. Save and reload:
+   ```powershell
+   . $PROFILE
+   ```
 
 **Usage:**
 ```powershell
@@ -47,16 +73,36 @@ claude-export Carousel
 claude-export ThumbReachMapper
 ```
 
-**How it works:**
-1. Looks in `notes/claude-sessions/[ComponentName]/`
-2. Finds most recent `.md` file (excluding MASTER files)
-3. Extracts key points and date
-4. Inserts summary into `[ComponentName]_MASTER.md` above "END OF MASTER DOCUMENTATION"
-5. Commits and pushes automatically
+#### Bash Setup
 
-**Behind the scenes:**
-- Calls `./scripts/post_chat.sh [ComponentName]`
-- The bash script handles the actual integration
+**Location:** `Scripts/claude-export.sh` and `Scripts/claude-sync.sh`
+
+**Option 1: Use Scripts Directly (Recommended)**
+```bash
+# Update all components
+./Scripts/claude-export.sh
+# or
+./Scripts/claude-export.sh all
+
+# Update specific component
+./Scripts/claude-export.sh Carousel
+./Scripts/claude-export.sh ThumbReachMapper
+```
+
+**Option 2: Add as Commands (Aliases)**
+Add to your `~/.bashrc` or `~/.bash_profile`:
+```bash
+alias claude-export='bash /g/My\ Drive/DesignSystem/DesignSystem/Scripts/claude-export.sh'
+alias claude-sync='bash /g/My\ Drive/DesignSystem/DesignSystem/Scripts/claude-sync.sh'
+```
+Then reload: `source ~/.bashrc`
+
+**Usage (after aliasing):**
+```bash
+claude-export
+claude-export Carousel
+claude-sync
+```
 
 #### `claude-sync` - Quick Commit & Push
 
@@ -67,6 +113,14 @@ claude-export ThumbReachMapper
 
 **Usage:**
 ```powershell
+# PowerShell
+claude-sync
+```
+
+```bash
+# Bash
+./Scripts/claude-sync.sh
+# or (if aliased)
 claude-sync
 ```
 
@@ -352,6 +406,13 @@ Cursor/VS Code automatically uses these settings. No action needed.
 
 3. **Integrate into documentation**
    ```powershell
+   # PowerShell
+   claude-export Carousel
+   ```
+   ```bash
+   # Bash
+   ./Scripts/claude-export.sh Carousel
+   # or (if aliased)
    claude-export Carousel
    ```
    - Automatically adds to MASTER.md
@@ -401,6 +462,7 @@ Cursor/VS Code automatically uses these settings. No action needed.
 
 ### claude-export not found?
 
+**PowerShell:**
 1. **Check if function exists:**
    ```powershell
    Get-Command claude-export
@@ -416,7 +478,24 @@ Cursor/VS Code automatically uses these settings. No action needed.
    notepad $PROFILE
    ```
    - Make sure the function from `claude-export-function.ps1` is there
-   - See `POWERSHELL_SETUP_INSTRUCTIONS.md` for setup
+
+**Bash:**
+1. **Check if scripts exist:**
+   ```bash
+   ls -la Scripts/claude-export.sh Scripts/claude-sync.sh
+   ```
+
+2. **Make scripts executable:**
+   ```bash
+   chmod +x Scripts/claude-export.sh Scripts/claude-sync.sh
+   ```
+
+3. **If using aliases, check your `.bashrc`:**
+   ```bash
+   cat ~/.bashrc | grep claude-export
+   ```
+   - Make sure aliases are defined correctly
+   - Reload: `source ~/.bashrc`
 
 ### Release notes not generating?
 
@@ -463,7 +542,9 @@ git config core.safecrlf false
 
 ## 📚 Related Documentation
 
-- **`POWERSHELL_SETUP_INSTRUCTIONS.md`** - Detailed setup for claude-export function
+- **`claude-export-function.ps1`** - PowerShell function source code (copy to your `$PROFILE`)
+- **`Scripts/claude-export.sh`** - Bash script for claude-export
+- **`Scripts/claude-sync.sh`** - Bash script for claude-sync
 - **`WHAT_IS_CLAUDE_EXPORT.md`** - Simple explanation of claude-export
 - **`Unified workflow cursor git guide`** - Complete workflow guide
 - **`claude_prompts/claude-local-setup.md`** - Claude integration setup
@@ -503,5 +584,5 @@ git config core.safecrlf false
 
 ---
 
-**Last Updated:** November 4, 2025  
+**Last Updated:** November 10, 2025  
 **Status:** All automation active and working ✅

@@ -1,66 +1,95 @@
-# Script to update PowerShell profile with correct claude-export function
-# Run this from PowerShell: .\update-profile.ps1
+# Quick PowerShell Profile Update Script
+# Run this in PowerShell: .\update-profile.ps1
 
-$profilePath = $PROFILE
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $correctFunctionPath = Join-Path $scriptDir "claude-export-function.ps1"
 
-Write-Host "Updating PowerShell profile at: $profilePath" -ForegroundColor Cyan
-
-# Check if function file exists
-if (-not (Test-Path $correctFunctionPath)) {
+if (!(Test-Path $correctFunctionPath)) {
     Write-Host "ERROR: claude-export-function.ps1 not found!" -ForegroundColor Red
-    Write-Host "Expected location: $correctFunctionPath" -ForegroundColor Yellow
-    Write-Host "Make sure you run this script from the project root directory." -ForegroundColor Yellow
+    Write-Host "Expected at: $correctFunctionPath" -ForegroundColor Yellow
     exit 1
 }
 
-# Check if profile exists, create if not
-if (-not (Test-Path $profilePath)) {
-    Write-Host "Profile doesn't exist. Creating it..." -ForegroundColor Yellow
-    $profileDir = Split-Path $profilePath -Parent
-    if (-not (Test-Path $profileDir)) {
-        New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+Write-Host "Updating PowerShell profile..." -ForegroundColor Cyan
+Write-Host "Profile location: $PROFILE" -ForegroundColor Gray
+
+# Ensure profile directory exists
+$profileDir = Split-Path $PROFILE -Parent
+if (!(Test-Path $profileDir)) {
+    Write-Host "Creating profile directory..." -ForegroundColor Yellow
+    New-Item -Path $profileDir -ItemType Directory -Force | Out-Null
+}
+
+# Read the function file
+$functionContent = Get-Content $correctFunctionPath -Raw
+
+# Check if profile exists and has content
+$profileExists = Test-Path $PROFILE
+$existingContent = ""
+
+if ($profileExists) {
+    $existingContent = Get-Content $PROFILE -Raw
+    Write-Host "Profile exists, checking for functions..." -ForegroundColor Gray
+} else {
+    Write-Host "Profile doesn't exist, creating new one..." -ForegroundColor Yellow
+}
+
+# Check if functions already exist
+$hasClaudeExport = $existingContent -match 'function claude-export'
+$hasClaudeSync = $existingContent -match 'function claude-sync'
+
+if ($hasClaudeExport -and $hasClaudeSync) {
+    Write-Host "Functions already exist in profile." -ForegroundColor Green
+    Write-Host "Updating to latest version..." -ForegroundColor Yellow
+    
+    # Remove old functions
+    $updatedContent = $existingContent -replace '(?s)# ========================================.*?Claude Export Functions.*?========================================\s*', '' -replace '(?s)Set-Alias bash.*?\r?\n', '' -replace '(?s)function claude-export\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', '' -replace '(?s)function claude-sync\s*\{[^}]*\}', ''
+    
+    # Add new functions
+    $separator = "`n`n"
+    if ($updatedContent.Trim() -ne "") {
+        $separator = "`n`n# ========================================`n# Claude Export Functions`n# ========================================`n"
+    } else {
+        $separator = "# ========================================`n# Claude Export Functions`n# ========================================`n"
     }
-    New-Item -ItemType File -Path $profilePath -Force | Out-Null
+    
+    $newContent = $updatedContent.Trim() + $separator + $functionContent.Trim()
+    Set-Content -Path $PROFILE -Value $newContent -Encoding UTF8
+} else {
+    Write-Host "Adding functions to profile..." -ForegroundColor Yellow
+    
+    # Add separator if profile has content
+    $separator = ""
+    if ($existingContent -and $existingContent.Trim() -ne "") {
+        $separator = "`n`n# ========================================`n# Claude Export Functions`n# ========================================`n"
+    } else {
+        $separator = "# ========================================`n# Claude Export Functions`n# ========================================`n"
+    }
+    
+    # Append functions
+    Add-Content -Path $PROFILE -Value $separator -Encoding UTF8
+    Add-Content -Path $PROFILE -Value $functionContent -Encoding UTF8
 }
 
-# Read current profile
-$profileContent = Get-Content $profilePath -Raw -ErrorAction SilentlyContinue
-if (-not $profileContent) {
-    $profileContent = ""
-}
-
-# Read the correct function (skip header comments, keep everything from Set-Alias onwards)
-$correctFunction = Get-Content $correctFunctionPath -Raw
-$functionToAdd = $correctFunction -replace '(?s)^#.*?\n(?=Set-Alias)', ''
-
-# Remove old functions using more reliable pattern
-# Remove claude-export function
-$profileContent = $profileContent -replace '(?s)function claude-export\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', ''
-
-# Remove claude-sync function  
-$profileContent = $profileContent -replace '(?s)function claude-sync\s*\{[^}]*\}', ''
-
-# Remove old bash alias (if standalone, not in function)
-$profileContent = $profileContent -replace "(?m)^Set-Alias bash\s+['`"].*['`"]\s*$", ''
-
-# Clean up extra blank lines
-$profileContent = $profileContent.Trim() -replace '\n{3,}', "`n`n"
-
-# Add the correct functions
-if ($profileContent.Length -gt 0) {
-    $profileContent += "`n`n"
-}
-
-$profileContent += $functionToAdd.Trim()
-
-# Write updated profile
-[System.IO.File]::WriteAllText($profilePath, $profileContent, [System.Text.Encoding]::UTF8)
-
-Write-Host "`nProfile updated successfully!" -ForegroundColor Green
 Write-Host "`nReloading profile..." -ForegroundColor Cyan
-. $profilePath
+. $PROFILE
 
-Write-Host "`nDone! Test with: claude-export Carousel" -ForegroundColor Green
+Write-Host "`n✅ Profile updated! Testing functions..." -ForegroundColor Green
 
+# Test functions
+if (Get-Command claude-export -ErrorAction SilentlyContinue) {
+    Write-Host "✅ claude-export is available" -ForegroundColor Green
+} else {
+    Write-Host "⚠️  claude-export not found - you may need to restart PowerShell" -ForegroundColor Yellow
+}
+
+if (Get-Command claude-sync -ErrorAction SilentlyContinue) {
+    Write-Host "✅ claude-sync is available" -ForegroundColor Green
+} else {
+    Write-Host "⚠️  claude-sync not found - you may need to restart PowerShell" -ForegroundColor Yellow
+}
+
+Write-Host "`nYou can now use:" -ForegroundColor Cyan
+Write-Host "  claude-export" -ForegroundColor White
+Write-Host "  claude-export Carousel" -ForegroundColor White
+Write-Host "  claude-sync" -ForegroundColor White
