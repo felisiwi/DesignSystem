@@ -1319,10 +1319,10 @@ if (DEBUG_MODE) {
 
 ## SECTION 5: Architecture & Code Organization
 
-### Current Architecture: Monolithic v1.1.0
+### Current Architecture: Monolithic v1.0.4
 
-**File:** `AdaptiveCarousel.1.1.0.tsx`  
-**Structure:** Single file, ~850 lines  
+**File:** `AdaptiveCarousel.1.0.4.tsx`  
+**Structure:** Single file, ~947 lines  
 **Status:** Primary production version
 
 #### Why Monolithic?
@@ -1361,7 +1361,7 @@ if (DEBUG_MODE) {
 #### Component Structure
 
 ```typescript
-// File: AdaptiveCarousel.1.1.0.tsx
+// File: AdaptiveCarousel.1.0.4.tsx
 
 // ============================================
 // IMPORTS (Lines 1-15)
@@ -1822,9 +1822,9 @@ export function calculateFinalItemWidth(/* params */): number {
 
 #### Comparison: Monolithic vs Modular
 
-| Aspect                | Monolithic (v1.1.0)     | Modular (v0.4.0)             |
+| Aspect                | Monolithic (v1.0.4)     | Modular (v0.4.0)             |
 | --------------------- | ----------------------- | ---------------------------- |
-| **Total Lines**       | ~850 in one file        | ~400 main + ~300 distributed |
+| **Total Lines**       | ~947 in one file        | ~400 main + ~300 distributed |
 | **Files**             | 1                       | 10+                          |
 | **Imports Needed**    | All in one place        | Need to wire up hooks        |
 | **Context**           | Visible all at once     | Distributed across files     |
@@ -1837,7 +1837,7 @@ export function calculateFinalItemWidth(/* params */): number {
 
 #### When to Use Which
 
-**Use Monolithic (v1.1.0) when:**
+**Use Monolithic (v1.0.4) when:**
 
 - ✅ Solo developer or small team
 - ✅ Building for Framer specifically
@@ -2550,7 +2550,7 @@ if (isMultiSkip) {
 1. Open your Framer project
 2. Create a new Code File
 3. Name it `AdaptiveCarousel.tsx`
-4. Copy the entire v1.1.0 component code
+4. Copy the entire v1.0.4 component code
 5. Use in your canvas as a component
 
 **For React Projects:**
@@ -2560,7 +2560,7 @@ if (isMultiSkip) {
 npm install framer-motion lucide-react
 
 # Copy component file to your project
-cp AdaptiveCarousel.1.1.0.tsx src/components/
+cp AdaptiveCarousel.1.0.4.tsx src/components/
 ```
 
 ### Basic Implementation
@@ -2568,7 +2568,7 @@ cp AdaptiveCarousel.1.1.0.tsx src/components/
 **Step 1: Import**
 
 ```typescript
-import AdaptiveCarousel from "./AdaptiveCarousel.1.1.0";
+import AdaptiveCarousel from "./AdaptiveCarousel.1.0.4";
 ```
 
 **Step 2: Use with Content**
@@ -3039,7 +3039,7 @@ if (directionLock === 'horizontal' && event.cancelable) {
 
 **Context:** Two architectural approaches exist
 
-**Decision:** Keep monolithic v1.1.0 as primary
+**Decision:** Keep monolithic v1.0.4 as primary (previously v1.1.0)
 
 **Rationale:**
 
@@ -3205,7 +3205,7 @@ describe("Gesture Detection", () => {
 
 ```typescript
 import { render, screen, fireEvent } from "@testing-library/react";
-import AdaptiveCarousel from "./AdaptiveCarousel.1.1.0";
+import AdaptiveCarousel from "./AdaptiveCarousel.1.0.4";
 
 describe("AdaptiveCarousel Integration", () => {
   test("Renders all children", () => {
@@ -3746,7 +3746,7 @@ const animationConfig = prefersReducedMotion
     };
 ```
 
-**Implementation Note:** Not currently in v1.1.0, but can be added if needed
+**Implementation Note:** Not currently in v1.0.4, but can be added if needed
 
 ---
 
@@ -4528,11 +4528,31 @@ const dragConstraints = useMemo(() => {
 
 ### APPENDIX A: File Structure
 
-**Monolithic Version (v1.1.0):**
+**Current Production Version (v1.0.4):**
 
 ```
-AdaptiveCarousel.1.1.0.tsx
+AdaptiveCarousel.1.0.4.tsx
 ```
+
+**Experiment Naming Convention:**
+
+When creating experimental versions, use the format:
+
+```
+AdaptiveCarousel.{current-version}-exp-{experiment-name}-v{experiment-version}.tsx
+```
+
+**Examples:**
+
+- `AdaptiveCarousel.1.0.4-exp-advancedmotion-v1.tsx` - Experiment based on v1.0.4, "advancedmotion" feature, version 1
+- `AdaptiveCarousel.1.0.4-exp-gapdynamics-v2.tsx` - Same base, "gapdynamics" experiment, version 2
+
+**Rationale:**
+
+- Experiments are clearly linked to their base production version
+- Multiple experiments can exist simultaneously without confusion
+- Experiment versions allow iteration without affecting base version
+- Easy to identify which production version an experiment is based on
 
 **Modular Version (v0.4.0):**
 
@@ -4582,7 +4602,9 @@ AdaptiveCarousel.1.1.0.tsx
 | v0.3.1     | Oct 26     | Polish & stability                 | Deprecated        |
 | v1.0.0     | Oct 28     | TypeScript migration               | Deprecated        |
 | v1.0.1     | Oct 29     | Jump cap (max 3)                   | Deprecated        |
-| **v1.1.0** | **Oct 30** | **Current version (monolithic)**   | **✅ Production** |
+| v1.0.2     | Nov 3      | Documentation updates              | Deprecated        |
+| v1.0.3     | Nov 3      | Additional improvements            | Deprecated        |
+| **v1.0.4** | **Nov 10** | **Current version (monolithic)**   | **✅ Production** |
 | v0.4.0     | Oct 30     | Modular architecture               | Reference         |
 
 ---
@@ -4646,7 +4668,7 @@ SEPARATION:
 
 **For Code Examples:**
 
-- Complete component: `AdaptiveCarousel.1.1.0.tsx`
+- Complete component: `AdaptiveCarousel.1.0.4.tsx`
 - Modular version: `AdaptiveCarousel-Modular.v0.4.0.tsx`
 - Gesture detection: `Utils/gestureDetection.ts`
 
@@ -4664,7 +4686,7 @@ SEPARATION:
 **Version:** 2.0  
 **Created:** November 3, 2025  
 **Last Updated:** November 3, 2025  
-**Component Version:** v1.1.0 (Monolithic)  
+**Component Version:** v1.0.4 (Monolithic)  
 **Source:** Claude chat sessions in DesignSystem project  
 **Total Lines:** 1800+  
 **Sections:** 13 main + 4 appendices
@@ -4698,7 +4720,7 @@ Only concise summaries or diffs are stored here — not full session transcripts
 **Process:**
 
 - Searched project knowledge for all carousel documentation
-- Consolidated development history from v0.1.x through v1.1.0
+- Consolidated development history from v0.1.x through v1.0.4
 - Organized chronologically with thematic sections
   **Sections Created:**
 - **Version Evolution:** Complete changelog with rationale
@@ -4787,11 +4809,14 @@ Only concise summaries or diffs are stored here — not full session transcripts
 **Date:** November 10, 2025
 **Focus:** 2-Column animation physics analysis and fix strategy development
 **Type:** Bug investigation / Performance optimization / Data analysis
-**Component Version:** v1.0.8 (current), targeting v1.0.9 with fixes
+**Component Version:** v1.0.4 (current)
 **Session Duration:** ~90 minutes
+
 ---
+
 **Primary Goal:** Analyze new diagnostic test data from multiple users to identify why 2-column carousel gestures feel unresponsive, and develop a comprehensive, sequential fix strategy with clear validation criteria.
 **Context from Previous Sessions:**
+
 - Session 08 (Nov 4): Initial investigation into 2-column glide detection struggles
 - Session 09 (Nov 4): Biomechanical analysis showing position-dependent interaction failures
 

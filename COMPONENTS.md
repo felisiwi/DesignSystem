@@ -12,7 +12,7 @@ Auto-generated list of all components and their latest versions.
 
 | Component | Latest Version | File | Status |
 |-----------|----------------|------|--------|
-| **Adaptive Carousel** | v1.0.8 | [`AdaptiveCarousel.1.0.8.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.8.tsx) | ✅ |
+| **Adaptive Carousel** | v1.0.4 | [`AdaptiveCarousel.1.0.4.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.4.tsx) | ✅ |
 | **Carousediagnostics** | v1.0.2 | [`carousediagnostics.1.0.2.tsx`](./src/components/carouseldiagnostics/carousediagnostics.1.0.2.tsx) | ✅ |
 | **Reachmapper** | v1.0.2 | [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx) | ✅ |
 
@@ -21,8 +21,8 @@ Auto-generated list of all components and their latest versions.
 ## Adaptive Carousel
 
 - **Directory**: `src/components/carousel/`
-- **Latest Version**: v1.0.8
-- **Component File**: [`AdaptiveCarousel.1.0.8.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.8.tsx)
+- **Latest Version**: v1.0.4
+- **Component File**: [`AdaptiveCarousel.1.0.4.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.4.tsx)
 - **Component Name**: `AdaptiveCarousel`
 
 ### Carousel Component
