@@ -71,6 +71,64 @@ Auto-generated list of all components and their latest versions.
 | Component | Latest Version | File | Status |
 |-----------|----------------|------|--------|
 | **Adaptive Carousel** | v1.0.8 | [`AdaptiveCarousel.1.0.8.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.8.tsx) | ✅ |
+| **Carousediagnostics** | v1.0.2 | [`carousediagnostics.1.0.2.tsx`](./src/components/carouseldiagnostics/carousediagnostics.1.0.2.tsx) | ✅ |
+| **Reachmapper** | v1.0.2 | [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx) | ✅ |
+
+---
+
+### Adaptive Carousel
+
+**Current Version**: v1.0.8
+
+**File**: [`AdaptiveCarousel.1.0.8.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.8.tsx)
+
+**Master Overview**: [Carousel_MASTER.md](./notes/claude-sessions/Carousel/Carousel_MASTER.md)
+
+**Key Features**:
+- 93.25% accurate gesture detection
+- Multi-tier animation system
+- Full accessibility support (WCAG 2.1 AA)
+- Monolithic architecture (single-file component)
+- Customizable styling and behavior
+
+**Quick Links**:
+- [API Reference](./src/components/carousel/API_Reference.md)
+- [Version History](./notes/claude-sessions/Carousel/)
+
+---
+
+### Carousediagnostics
+
+**Current Version**: v1.0.2
+
+**File**: [`carousediagnostics.1.0.2.tsx`](./src/components/carouseldiagnostics/carousediagnostics.1.0.2.tsx)
+
+**Purpose**: Diagnostic tool for analyzing carousel swipe gestures
+
+**Quick Links**:
+- [Documentation](./src/components/carouseldiagnostics/carouseldiagnostics_documentation.md)
+- [Analysis](./Data/carousel_diagnostics/CarouselDiagnostics_analysis.md)
+
+---
+
+### Reachmapper
+
+**Current Version**: v1.0.2
+
+**File**: [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx)
+
+**Master Overview**: [Thumbreachmapper_MASTER.md](./notes/claude-sessions/ThumbReachMapper/Thumbreachmapper_MASTER.md)
+
+---
+
+
+## Component Registry
+
+Auto-generated list of all components and their latest versions.
+
+| Component | Latest Version | File | Status |
+|-----------|----------------|------|--------|
+| **Adaptive Carousel** | v1.0.8 | [`AdaptiveCarousel.1.0.8.tsx`](./src/components/carousel/AdaptiveCarousel.1.0.8.tsx) | ✅ |
 | **Carousediagnostics** | v1.0.1 | [`carousediagnostics.1.0.1.tsx`](./src/components/carouseldiagnostics/carousediagnostics.1.0.1.tsx) | ✅ |
 | **Reachmapper** | v1.0.2 | [`Reachmapper_1.0.2.tsx`](./src/components/thumbreachmapper/Reachmapper_1.0.2.tsx) | ✅ |
 
