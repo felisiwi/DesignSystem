@@ -36,8 +36,6 @@ interface AdaptiveCarouselProps {
   flickDamping?: number;
   glideStiffness?: number;
   glideDamping?: number;
-  // Edge effects
-  edgeResistance?: "tight" | "moderate" | "loose";
   // Arrow styling props
   arrowButtonSize?: number;
   arrowColor?: string;
@@ -68,7 +66,6 @@ export default function AdaptiveCarousel({
   flickDamping = 55,
   glideStiffness = 120,
   glideDamping = 25,
-  edgeResistance = "loose",
   arrowButtonSize = 32,
   arrowColor = "#F2F2F2",
   arrowPressedColor = "#000000",
@@ -169,20 +166,6 @@ export default function AdaptiveCarousel({
     gap,
     peakAmount,
   ]);
-
-  // Edge resistance config
-  const edgeConfig = useMemo(() => {
-    switch (edgeResistance) {
-      case "tight":
-        return { resistance: 0.15 };
-      case "moderate":
-        return { resistance: 0.25 };
-      case "loose":
-        return { resistance: 0.35 };
-      default:
-        return { resistance: 0.35 };
-    }
-  }, [edgeResistance]);
 
   // Navigation function with queue management
   const goToIndex = async (
@@ -321,23 +304,6 @@ export default function AdaptiveCarousel({
     const dragDirection = dragOffset < 0 ? 1 : -1;
     const distance = Math.abs(dragOffset);
     const duration = Date.now() - dragStartTime.current;
-
-    // Edge bounce-back handling (prevents incorrect navigation when pulling at edges)
-    const atStart = currentIndex === 0 && dragOffset > 0;
-    const atEnd = currentIndex === maxIndex && dragOffset < 0;
-
-    if (atStart || atEnd) {
-      // Snap back to current position with slight bounce
-      const targetX = -currentIndex * itemWidthWithGap;
-      animate(x, targetX, {
-        type: "spring",
-        stiffness: 250,
-        damping: 25,
-        velocity: -info.velocity.x * 0.3,
-      });
-      velocityHistory.current = [];
-      return; // Prevents gesture detection from running
-    }
 
     // Calculate peak acceleration
     let peakAcceleration = 0;
@@ -609,7 +575,7 @@ export default function AdaptiveCarousel({
         <motion.div
           drag="x"
           dragConstraints={dragConstraints}
-          dragElastic={edgeConfig.resistance}
+          dragElastic={0}
           dragMomentum={true}
           dragTransition={{
             power: 0.2,
@@ -907,15 +873,6 @@ addPropertyControls(AdaptiveCarousel, {
     displayStepper: true,
     description: "Damping used for multi-card glides.",
   },
-  edgeResistance: {
-    type: ControlType.Enum,
-    title: "Edge Resistance",
-    options: ["tight", "moderate", "loose"],
-    optionTitles: ["Tight", "Moderate", "Loose"],
-    defaultValue: "loose",
-    description:
-      "How much you can pull at carousel edges (rubber band effect). Loose = more pull, Tight = less pull.",
-  },
   arrowButtonSize: {
     type: ControlType.Enum,
     title: "Arrow Button Size",
@@ -987,3 +944,4 @@ addPropertyControls(AdaptiveCarousel, {
     hidden: (props) => !props.dotsEnabled,
   },
 });
+
